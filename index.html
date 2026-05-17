@@ -318,6 +318,22 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   .winners-grid{grid-template-columns:1fr !important;}
 }
 
+/* ========= HISTORY / RANKING ROWS ========= */
+.hist-head{display:grid;grid-template-columns:2.5rem 1fr auto;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.hist-row{display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
+.hist-row:last-child{border-bottom:none;}
+.hist-row .yr{color:var(--text3);}
+.hist-row .opp{color:var(--text2);font-size:.75rem;}
+.rank-head{display:grid;grid-template-columns:1.8rem 1fr 3rem 3rem 3.5rem;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.rank-row{display:grid;grid-template-columns:1.8rem 1fr 3rem 3rem 3.5rem;align-items:center;gap:.5rem;padding:.4rem .4rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
+.rank-row:last-child{border-bottom:none;}
+.rank-wm{color:#4cc9f0;font-weight:700;text-align:center;}
+.rank-em{color:#9b5de5;font-weight:700;text-align:center;}
+.rank-total{color:var(--gold);font-weight:800;text-align:right;}
+.scorer-head{display:grid;grid-template-columns:2.5rem 1fr 2.5rem;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.scorer-row{display:grid;grid-template-columns:2.5rem 1fr 2.5rem;align-items:center;gap:.5rem;padding:.35rem .4rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
+.scorer-row:last-child{border-bottom:none;}
+.scorer-goals{color:var(--gold);font-weight:700;text-align:right;}
 /* ========= TOOLTIP ========= */
 [title]{cursor:help;}
 </style>
@@ -432,62 +448,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
       <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">⚽ Spielball</div><div style="font-size:1rem;font-weight:700;">Trionda (Adidas)</div><div style="font-size:.75rem;color:var(--text2);">In den Gastgeber-Nationalfarben</div></div>
     </div>
 
-    <!-- WM & EM Sieger -->
-    <div class="winners-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.5rem;">
-      <!-- WM Sieger -->
-      <div class="card">
-        <div class="sec-title">🌍 FIFA WM-Sieger (alle)</div>
-        <div style="display:flex;flex-direction:column;gap:.25rem;">
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;"><span>Jahr</span><span>Sieger</span><span>Finale gegen</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2022</span><span><strong>🇦🇷 Argentinien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇫🇷 Frankreich</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2018</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-size:.72rem;">🇭🇷 Kroatien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2014</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇦🇷 Argentinien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2010</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇳🇱 Niederlande</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2006</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇫🇷 Frankreich</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2002</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1998</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-size:.72rem;">🇧🇷 Brasilien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1994</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇮🇹 Italien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1990</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇦🇷 Argentinien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1986</span><span><strong>🇦🇷 Argentinien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1982</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1978</span><span><strong>🇦🇷 Argentinien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇳🇱 Niederlande</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1974</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇳🇱 Niederlande</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1970</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇮🇹 Italien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1966</span><span><strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1962</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇨🇿 Tschechoslowakei</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1958</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇸🇪 Schweden</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1954</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇭🇺 Ungarn</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1950</span><span><strong>🇺🇾 Uruguay</strong></span><span style="color:var(--text2);font-size:.72rem;">🇧🇷 Brasilien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1938</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇭🇺 Ungarn</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1934</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇨🇿 Tschechoslowakei</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;font-size:.8rem;"><span style="color:var(--text3);">1930</span><span><strong>🇺🇾 Uruguay</strong></span><span style="color:var(--text2);font-size:.72rem;">🇦🇷 Argentinien</span></div>
-        </div>
-      </div>
-      <!-- EM Sieger -->
-      <div class="card">
-        <div class="sec-title">🇪🇺 UEFA EM-Sieger (alle)</div>
-        <div style="display:flex;flex-direction:column;gap:.25rem;">
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;"><span>Jahr</span><span>Sieger</span><span>Finale gegen</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2024</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-size:.72rem;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2020</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2016</span><span><strong>🇵🇹 Portugal</strong></span><span style="color:var(--text2);font-size:.72rem;">🇫🇷 Frankreich</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2012</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇮🇹 Italien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2008</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2004</span><span><strong>🇬🇷 Griechenland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇵🇹 Portugal</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">2000</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-size:.72rem;">🇮🇹 Italien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1996</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇨🇿 Tschechien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1992</span><span><strong>🇩🇰 Dänemark</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1988</span><span><strong>🇳🇱 Niederlande</strong></span><span style="color:var(--text2);font-size:.72rem;">🇷🇺 UdSSR</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1984</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-size:.72rem;">🇪🇸 Spanien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1980</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇧🇪 Belgien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1976</span><span><strong>🇨🇿 Tschechoslowakei</strong></span><span style="color:var(--text2);font-size:.72rem;">🇩🇪 Deutschland</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1972</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--text2);font-size:.72rem;">🇷🇺 UdSSR</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1968</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇾🇺 Jugoslawien</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;"><span style="color:var(--text3);">1964</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-size:.72rem;">🇷🇺 UdSSR</span></div>
-          <div style="display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:.5rem;padding:.3rem .1rem;font-size:.8rem;"><span style="color:var(--text3);">1960</span><span><strong>🇷🇺 UdSSR</strong></span><span style="color:var(--text2);font-size:.72rem;">🇾🇺 Jugoslawien</span></div>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <!-- ====== GROUPS TAB ====== -->
@@ -554,6 +515,11 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
       <button class="stab" onclick="showStatSection('standings',this)">📊 Standings</button>
       <button class="stab" onclick="showStatSection('cards',this)">🃏 Karten</button>
       <button class="stab" onclick="showStatSection('teamstats',this)">🏆 Mannschaftsstats</button>
+      <span style="width:1px;height:20px;background:var(--border);display:inline-block;vertical-align:middle;"></span>
+      <button class="stab" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
+      <button class="stab" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
+      <button class="stab" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
+      <button class="stab" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
     </div>
 
     <!-- TORSCHÜTZEN -->
@@ -598,6 +564,108 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
           <div class="stats-head">🔵 Ballbesitz (%)</div>
           <div id="ts-poss" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
         </div>
+      </div>
+    </div>
+
+    <!-- WM SIEGER HISTORISCH -->
+    <div id="stat-wmsieger" style="display:none">
+      <div class="stats-section" style="max-width:520px">
+        <div class="stats-head">🌍 FIFA WM-Sieger · alle Turniere</div>
+        <div class="hist-head"><span>Jahr</span><span>Sieger</span><span>Finale vs.</span></div>
+        <div class="hist-row"><span class="yr">2022</span><span><strong>🇦🇷 Argentinien</strong></span><span class="opp">🇫🇷 Frankreich</span></div>
+        <div class="hist-row"><span class="yr">2018</span><span><strong>🇫🇷 Frankreich</strong></span><span class="opp">🇭🇷 Kroatien</span></div>
+        <div class="hist-row"><span class="yr">2014</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇦🇷 Argentinien</span></div>
+        <div class="hist-row"><span class="yr">2010</span><span><strong>🇪🇸 Spanien</strong></span><span class="opp">🇳🇱 Niederlande</span></div>
+        <div class="hist-row"><span class="yr">2006</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🇫🇷 Frankreich</span></div>
+        <div class="hist-row"><span class="yr">2002</span><span><strong>🇧🇷 Brasilien</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1998</span><span><strong>🇫🇷 Frankreich</strong></span><span class="opp">🇧🇷 Brasilien</span></div>
+        <div class="hist-row"><span class="yr">1994</span><span><strong>🇧🇷 Brasilien</strong></span><span class="opp">🇮🇹 Italien</span></div>
+        <div class="hist-row"><span class="yr">1990</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇦🇷 Argentinien</span></div>
+        <div class="hist-row"><span class="yr">1986</span><span><strong>🇦🇷 Argentinien</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1982</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1978</span><span><strong>🇦🇷 Argentinien</strong></span><span class="opp">🇳🇱 Niederlande</span></div>
+        <div class="hist-row"><span class="yr">1974</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇳🇱 Niederlande</span></div>
+        <div class="hist-row"><span class="yr">1970</span><span><strong>🇧🇷 Brasilien</strong></span><span class="opp">🇮🇹 Italien</span></div>
+        <div class="hist-row"><span class="yr">1966</span><span><strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1962</span><span><strong>🇧🇷 Brasilien</strong></span><span class="opp">🇨🇿 Tschechoslowakei</span></div>
+        <div class="hist-row"><span class="yr">1958</span><span><strong>🇧🇷 Brasilien</strong></span><span class="opp">🇸🇪 Schweden</span></div>
+        <div class="hist-row"><span class="yr">1954</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇭🇺 Ungarn</span></div>
+        <div class="hist-row"><span class="yr">1950</span><span><strong>🇺🇾 Uruguay</strong></span><span class="opp">🇧🇷 Brasilien</span></div>
+        <div class="hist-row"><span class="yr">1938</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🇭🇺 Ungarn</span></div>
+        <div class="hist-row"><span class="yr">1934</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🇨🇿 Tschechoslowakei</span></div>
+        <div class="hist-row"><span class="yr">1930</span><span><strong>🇺🇾 Uruguay</strong></span><span class="opp">🇦🇷 Argentinien</span></div>
+      </div>
+    </div>
+
+    <!-- EM SIEGER HISTORISCH -->
+    <div id="stat-emsieger" style="display:none">
+      <div class="stats-section" style="max-width:520px">
+        <div class="stats-head">🇪🇺 UEFA EM-Sieger · alle Turniere</div>
+        <div class="hist-head"><span>Jahr</span><span>Sieger</span><span>Finale vs.</span></div>
+        <div class="hist-row"><span class="yr">2024</span><span><strong>🇪🇸 Spanien</strong></span><span class="opp">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span></div>
+        <div class="hist-row"><span class="yr">2020</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span></div>
+        <div class="hist-row"><span class="yr">2016</span><span><strong>🇵🇹 Portugal</strong></span><span class="opp">🇫🇷 Frankreich</span></div>
+        <div class="hist-row"><span class="yr">2012</span><span><strong>🇪🇸 Spanien</strong></span><span class="opp">🇮🇹 Italien</span></div>
+        <div class="hist-row"><span class="yr">2008</span><span><strong>🇪🇸 Spanien</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">2004</span><span><strong>🇬🇷 Griechenland</strong></span><span class="opp">🇵🇹 Portugal</span></div>
+        <div class="hist-row"><span class="yr">2000</span><span><strong>🇫🇷 Frankreich</strong></span><span class="opp">🇮🇹 Italien</span></div>
+        <div class="hist-row"><span class="yr">1996</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇨🇿 Tschechien</span></div>
+        <div class="hist-row"><span class="yr">1992</span><span><strong>🇩🇰 Dänemark</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1988</span><span><strong>🇳🇱 Niederlande</strong></span><span class="opp">🇷🇺 UdSSR</span></div>
+        <div class="hist-row"><span class="yr">1984</span><span><strong>🇫🇷 Frankreich</strong></span><span class="opp">🇪🇸 Spanien</span></div>
+        <div class="hist-row"><span class="yr">1980</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇧🇪 Belgien</span></div>
+        <div class="hist-row"><span class="yr">1976</span><span><strong>🇨🇿 Tschechoslowakei</strong></span><span class="opp">🇩🇪 Deutschland</span></div>
+        <div class="hist-row"><span class="yr">1972</span><span><strong>🇩🇪 Deutschland</strong></span><span class="opp">🇷🇺 UdSSR</span></div>
+        <div class="hist-row"><span class="yr">1968</span><span><strong>🇮🇹 Italien</strong></span><span class="opp">🇾🇺 Jugoslawien</span></div>
+        <div class="hist-row"><span class="yr">1964</span><span><strong>🇪🇸 Spanien</strong></span><span class="opp">🇷🇺 UdSSR</span></div>
+        <div class="hist-row"><span class="yr">1960</span><span><strong>🇷🇺 UdSSR</strong></span><span class="opp">🇾🇺 Jugoslawien</span></div>
+      </div>
+    </div>
+
+    <!-- TITEL-RANKING -->
+    <div id="stat-titelranking" style="display:none">
+      <div class="stats-section" style="max-width:560px">
+        <div class="stats-head">🥇 Titel-Ranking · WM &amp; EM kombiniert</div>
+        <div class="rank-head"><span>#</span><span>Land</span><span style="color:#4cc9f0">🌍 WM</span><span style="color:#9b5de5">🇪🇺 EM</span><span style="text-align:right">Gesamt</span></div>
+        <div class="rank-row"><span style="color:var(--gold);font-weight:800">1</span><span><strong>🇩🇪 Deutschland</strong></span><span class="rank-wm">4</span><span class="rank-em">3</span><span class="rank-total">7</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">2</span><span><strong>🇮🇹 Italien</strong></span><span class="rank-wm">4</span><span class="rank-em">2</span><span class="rank-total">6</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">3</span><span><strong>🇪🇸 Spanien</strong></span><span class="rank-wm">1</span><span class="rank-em">4</span><span class="rank-total">5</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">3</span><span><strong>🇧🇷 Brasilien</strong></span><span class="rank-wm">5</span><span class="rank-em">—</span><span class="rank-total">5</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">5</span><span><strong>🇫🇷 Frankreich</strong></span><span class="rank-wm">2</span><span class="rank-em">2</span><span class="rank-total">4</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">6</span><span><strong>🇦🇷 Argentinien</strong></span><span class="rank-wm">3</span><span class="rank-em">—</span><span class="rank-total">3</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">7</span><span><strong>🇺🇾 Uruguay</strong></span><span class="rank-wm">2</span><span class="rank-em">—</span><span class="rank-total">2</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</strong></span><span class="rank-wm">1</span><span class="rank-em">—</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇵🇹 Portugal</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇳🇱 Niederlande</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇬🇷 Griechenland</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇩🇰 Dänemark</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇷🇺 UdSSR / Russland</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇨🇿 Tschechoslowakei</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+      </div>
+    </div>
+
+    <!-- EM TORSCHÜTZEN HISTORISCH -->
+    <div id="stat-emscorers" style="display:none">
+      <div class="stats-section" style="max-width:520px">
+        <div class="stats-head">⚽ EM-Torschützenkönige · alle Turniere</div>
+        <div class="scorer-head"><span>Jahr</span><span>Spieler</span><span>Tore</span></div>
+        <div class="scorer-row"><span class="yr">2024</span><span>🇪🇸 Dani Olmo <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">3</span></div>
+        <div class="scorer-row"><span class="yr">2020</span><span>🇵🇹 Cristiano Ronaldo <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">2016</span><span>🇫🇷 Antoine Griezmann</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">2012</span><span>🇪🇸 Fernando Torres</span><span class="scorer-goals">3</span></div>
+        <div class="scorer-row"><span class="yr">2008</span><span>🇪🇸 David Villa</span><span class="scorer-goals">4</span></div>
+        <div class="scorer-row"><span class="yr">2004</span><span>🇨🇿 Milan Baroš</span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">2000</span><span>🇳🇱 Patrick Kluivert <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">1996</span><span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Alan Shearer</span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">1992</span><span>🇳🇱 Dennis Bergkamp <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">3</span></div>
+        <div class="scorer-row"><span class="yr">1988</span><span>🇳🇱 Marco van Basten</span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">1984</span><span>🇫🇷 Michel Platini</span><span class="scorer-goals">9</span></div>
+        <div class="scorer-row"><span class="yr">1980</span><span>🇩🇪 Klaus Allofs</span><span class="scorer-goals">3</span></div>
+        <div class="scorer-row"><span class="yr">1976</span><span>🇩🇪 Dieter Müller</span><span class="scorer-goals">4</span></div>
+        <div class="scorer-row"><span class="yr">1972</span><span>🇩🇪 Gerd Müller</span><span class="scorer-goals">4</span></div>
+        <div class="scorer-row"><span class="yr">1968</span><span>🇷🇸 Dragan Džajić</span><span class="scorer-goals">2</span></div>
+        <div class="scorer-row"><span class="yr">1964</span><span>🇪🇸 Jesús Pereda <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
+        <div class="scorer-row"><span class="yr">1960</span><span>🇷🇺 Valentin Ivanov <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
       </div>
     </div>
 
@@ -1121,7 +1189,7 @@ const ESPN_LEADERS   = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIF
 let activeStatSection = 'scorers';
 
 function showStatSection(id, btn) {
-  ['scorers','standings','cards','teamstats'].forEach(s => {
+  ['scorers','standings','cards','teamstats','wmsieger','emsieger','titelranking','emscorers'].forEach(s => {
     const el = document.getElementById('stat-'+s);
     if (el) el.style.display = s === id ? '' : 'none';
   });
