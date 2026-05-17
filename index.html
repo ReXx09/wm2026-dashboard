@@ -29,10 +29,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 header{
   background:linear-gradient(135deg,#050b18 0%,#0d1f4a 40%,#1a0a2e 100%);
   border-bottom:2px solid var(--gold);
-  padding:1rem 2rem;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  padding:1.2rem 2rem;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.8rem;text-align:center;
 }
-.hd-left{display:flex;align-items:center;gap:1rem;}
+.hd-left{display:flex;align-items:center;gap:1rem;justify-content:center;}
 .hd-trophy{font-size:3rem;filter:drop-shadow(0 0 12px #f0b42988);}
 .hd-title h1{
   font-size:1.6rem;font-weight:900;letter-spacing:-0.03em;
@@ -41,22 +41,22 @@ header{
 }
 .hd-title p{color:var(--text2);font-size:0.8rem;margin-top:2px;}
 .hd-hosts{display:flex;gap:0.4rem;font-size:1.8rem;}
-.hd-right{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
+.hd-right{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;justify-content:center;}
 
 /* Countdown */
 .countdown{
   background:rgba(255,255,255,0.04);border:1px solid rgba(240,180,41,0.3);
-  border-radius:14px;padding:0.8rem 1.4rem;text-align:center;
+  border-radius:16px;padding:1rem 2rem;text-align:center;
 }
-.cd-label{font-size:0.62rem;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.4rem;}
-.cd-units{display:flex;gap:.6rem;align-items:center;}
-.cd-unit{text-align:center;min-width:38px;}
+.cd-label{font-size:0.68rem;color:var(--text2);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.6rem;}
+.cd-units{display:flex;gap:.9rem;align-items:center;}
+.cd-unit{text-align:center;min-width:52px;}
 .cd-num{
-  font-size:1.6rem;font-weight:900;color:var(--gold);display:block;
+  font-size:2.4rem;font-weight:900;color:var(--gold);display:block;
   font-variant-numeric:tabular-nums;line-height:1;
 }
-.cd-lbl{font-size:0.55rem;color:var(--text3);text-transform:uppercase;margin-top:2px;}
-.cd-sep{color:var(--gold);font-size:1.4rem;font-weight:900;padding-bottom:6px;}
+.cd-lbl{font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-top:4px;}
+.cd-sep{color:var(--gold);font-size:2.1rem;font-weight:900;padding-bottom:8px;}
 .cd-live{color:var(--green);font-weight:700;font-size:1rem;animation:blink 1s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
 
