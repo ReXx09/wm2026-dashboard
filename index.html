@@ -237,6 +237,41 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .lbtn:hover{background:rgba(255,255,255,.1);color:var(--text);}
 .lbtn.active-btn{color:var(--green);border-color:rgba(46,196,182,.4);}
 
+/* ========= STATISTIKEN ========= */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem;}
+.stats-section{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.stats-head{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.85rem;color:var(--text);display:flex;align-items:center;gap:.5rem;}
+.stats-body{padding:.6rem 0;}
+.player-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 1.2rem;transition:background .15s;}
+.player-row:hover{background:rgba(255,255,255,.04);}
+.pr-rank{font-size:.72rem;color:var(--text3);width:18px;text-align:right;flex-shrink:0;}
+.pr-rank.gold{color:#f0b429;font-weight:700;}
+.pr-flag{font-size:1.1rem;flex-shrink:0;}
+.pr-name{flex:1;font-size:.82rem;color:var(--text);}
+.pr-team{font-size:.7rem;color:var(--text3);}
+.pr-val{font-size:1rem;font-weight:700;color:var(--gold);min-width:24px;text-align:right;}
+.pr-val.red-val{color:var(--red);}
+.pr-val.yellow-val{color:#f0b429;}
+.standings-wrap{overflow-x:auto;}
+.standings-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+.standings-table th{padding:.4rem .6rem;color:var(--text3);font-weight:600;text-align:center;border-bottom:1px solid var(--border);}
+.standings-table th:first-child{text-align:left;padding-left:1.2rem;}
+.standings-table td{padding:.45rem .6rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);}
+.standings-table td:first-child{text-align:left;padding-left:1.2rem;}
+.standings-table tr:last-child td{border-bottom:none;}
+.standings-table tr.qualify td{color:var(--green);}
+.standings-table tr.promote td{color:var(--gold);}
+.st-flag{margin-right:.35rem;}
+.team-stat-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 1.2rem;}
+.tsr-flag{font-size:1rem;}
+.tsr-name{flex:1;font-size:.8rem;color:var(--text);}
+.tsr-bar-wrap{width:80px;background:rgba(255,255,255,.07);border-radius:4px;height:6px;overflow:hidden;}
+.tsr-bar{height:6px;border-radius:4px;background:var(--gold);}
+.tsr-val{font-size:.8rem;font-weight:700;color:var(--text);min-width:28px;text-align:right;}
+.stats-empty{padding:2.5rem 1.2rem;text-align:center;color:var(--text3);font-size:.8rem;line-height:1.6;}
+.stats-tabs{display:flex;gap:.4rem;flex-wrap:wrap;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.stab{padding:.28rem .65rem;border-radius:6px;font-size:.74rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text2);transition:all .2s;}
+.stab.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
 /* ========= VENUES ========= */
 .venues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;}
 .venue-card{
@@ -318,6 +353,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   <button class="nb" onclick="showTab('groups',this)"><span class="icon">🗂️</span>Gruppen</button>
   <button class="nb" onclick="showTab('schedule',this)"><span class="icon">📅</span>Spielplan</button>
   <button class="nb" onclick="showTab('venues',this)"><span class="icon">🏟️</span>Stadien</button>
+  <button class="nb" onclick="showTab('stats',this)"><span class="icon">📈</span>Statistiken</button>
 </nav>
 
 <!-- MAIN -->
@@ -444,6 +480,69 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
       </div>
     </div>
     <div class="matches-wrap" id="matches-wrap"></div>
+  </div>
+
+  <!-- ====== STATS TAB ====== -->
+  <div class="tab" id="tab-stats">
+    <div class="sec-title">📈 Turnierstatistiken</div>
+
+    <!-- Sub-navigation -->
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <button class="stab active" onclick="showStatSection('scorers',this)">🥅 Torschützen</button>
+      <button class="stab" onclick="showStatSection('standings',this)">📊 Standings</button>
+      <button class="stab" onclick="showStatSection('cards',this)">🃏 Karten</button>
+      <button class="stab" onclick="showStatSection('teamstats',this)">🏆 Mannschaftsstats</button>
+    </div>
+
+    <!-- TORSCHÜTZEN -->
+    <div id="stat-scorers">
+      <div class="stats-section">
+        <div class="stats-head">🥅 Top Torschützen</div>
+        <div id="scorers-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart (11. Juni 2026)</div></div>
+      </div>
+    </div>
+
+    <!-- STANDINGS -->
+    <div id="stat-standings" style="display:none">
+      <div class="stats-grid" id="standings-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart (11. Juni 2026)</div></div>
+    </div>
+
+    <!-- KARTEN -->
+    <div id="stat-cards" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+        <div class="stats-section">
+          <div class="stats-head">🟨 Gelbe Karten</div>
+          <div id="yellow-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+        <div class="stats-section">
+          <div class="stats-head">🟥 Rote Karten</div>
+          <div id="red-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANNSCHAFTSSTATS -->
+    <div id="stat-teamstats" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+        <div class="stats-section" id="ts-goals-box">
+          <div class="stats-head">⚽ Geschossene Tore</div>
+          <div id="ts-goals" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+        <div class="stats-section" id="ts-shots-box">
+          <div class="stats-head">🎯 Torschüsse</div>
+          <div id="ts-shots" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+        <div class="stats-section" id="ts-poss-box">
+          <div class="stats-head">🔵 Ballbesitz (%)</div>
+          <div id="ts-poss" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;display:flex;align-items:center;gap:.75rem;">
+      <span id="stats-last-update" style="font-size:.73rem;color:var(--text3);">Noch nicht geladen</span>
+      <button class="lbtn" onclick="fetchStats()">🔄 Aktualisieren</button>
+    </div>
   </div>
 
   <!-- ====== VENUES TAB ====== -->
@@ -912,6 +1011,128 @@ function initLiveData() {
   arTimer = setInterval(fetchLiveData, 60000);
 }
 
+// =====================================================================
+// STATISTICS SYSTEM
+// =====================================================================
+const ESPN_STANDINGS = 'https://site.api.espn.com/apis/v2/sports/soccer/FIFA.WC/standings';
+const ESPN_LEADERS   = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WC/leaders';
+
+let activeStatSection = 'scorers';
+
+function showStatSection(id, btn) {
+  ['scorers','standings','cards','teamstats'].forEach(s => {
+    const el = document.getElementById('stat-'+s);
+    if (el) el.style.display = s === id ? '' : 'none';
+  });
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  activeStatSection = id;
+}
+
+async function fetchStats() {
+  const tsEl = document.getElementById('stats-last-update');
+  if (tsEl) tsEl.textContent = 'Wird geladen…';
+  try {
+    const [stRes, lRes] = await Promise.allSettled([
+      fetch(ESPN_STANDINGS).then(r => r.ok ? r.json() : null),
+      fetch(ESPN_LEADERS).then(r => r.ok ? r.json() : null)
+    ]);
+    const stData = stRes.status === 'fulfilled' ? stRes.value : null;
+    const lData  = lRes.status  === 'fulfilled' ? lRes.value  : null;
+    if (stData) renderStandings(stData);
+    if (lData)  renderLeaders(lData);
+    if (tsEl) tsEl.textContent = 'Aktualisiert: ' + new Date().toLocaleTimeString('de-DE');
+  } catch(e) {
+    console.warn('Stats fetch error:', e);
+    if (tsEl) tsEl.textContent = '⚠ API nicht erreichbar';
+  }
+}
+
+function renderStandings(data) {
+  const wrap = document.getElementById('standings-body');
+  if (!wrap) return;
+  const groups = data.children || data.standings?.entries ? [data] : (data.children || []);
+  if (!groups.length) return;
+  let html = '';
+  groups.forEach(group => {
+    const name = group.name || group.abbreviation || 'Gruppe';
+    const entries = group.standings?.entries || [];
+    if (!entries.length) return;
+    html += `<div class="stats-section"><div class="stats-head">📊 ${name}</div><div class="standings-wrap"><table class="standings-table">`;
+    html += `<tr><th>Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>T</th><th>D</th><th>Pts</th></tr>`;
+    entries.forEach((e, i) => {
+      const team = e.team?.displayName || '?';
+      const flag = e.team?.flag || '';
+      const stats = {};
+      (e.stats || []).forEach(s => stats[s.name || s.abbreviation] = s.displayValue || s.value);
+      const qualify = i < 2 ? 'qualify' : '';
+      html += `<tr class="${qualify}"><td><span class="st-flag">${flag}</span>${toDE(team)}</td><td>${stats.gamesPlayed||stats.GP||0}</td><td>${stats.wins||stats.W||0}</td><td>${stats.ties||stats.T||0}</td><td>${stats.losses||stats.L||0}</td><td>${stats.pointsFor||stats.GF||'–'}:${stats.pointsAgainst||stats.GA||'–'}</td><td>${stats.pointDifferential||stats.GD||0}</td><td><strong>${stats.points||stats.PTS||0}</strong></td></tr>`;
+    });
+    html += `</table></div></div>`;
+  });
+  if (html) wrap.innerHTML = html;
+}
+
+function renderLeaders(data) {
+  const categories = data.leaders || [];
+  categories.forEach(cat => {
+    const name = (cat.name || '').toLowerCase();
+    const isGoals   = name.includes('goal') || name.includes('tor');
+    const isYellow  = name.includes('yellow') || name.includes('gelb');
+    const isRed     = name.includes('red') || name.includes('rot');
+    const isShots   = name.includes('shot') || name.includes('schuss');
+    const isPoss    = name.includes('poss') || name.includes('ball');
+    const isAssist  = name.includes('assist');
+    const leaders   = cat.leaders || [];
+    if (!leaders.length) return;
+    let rows = '';
+    leaders.slice(0, 15).forEach((l, i) => {
+      const athlete = l.athlete || {};
+      const pname   = athlete.displayName || athlete.fullName || '?';
+      const pflag   = athlete.flag?.href ? '' : (athlete.flag || '');
+      const pteam   = toDE(l.team?.displayName || '');
+      const val     = l.value !== undefined ? l.value : (l.displayValue || '–');
+      const rank    = i === 0 ? 'gold' : '';
+      const valCls  = isRed ? 'red-val' : isYellow ? 'yellow-val' : '';
+      rows += `<div class="player-row">
+        <span class="pr-rank ${rank}">${i+1}</span>
+        <span class="pr-flag">${pflag}</span>
+        <div style="flex:1;"><div class="pr-name">${pname}</div><div class="pr-team">${pteam}</div></div>
+        <span class="pr-val ${valCls}">${val}</span>
+      </div>`;
+    });
+    if (!rows) return;
+    const container = isGoals ? 'scorers-body'
+      : isYellow ? 'yellow-body'
+      : isRed    ? 'red-body'
+      : isShots  ? 'ts-shots'
+      : isPoss   ? 'ts-poss'
+      : null;
+    if (container) {
+      const el = document.getElementById(container);
+      if (el) el.innerHTML = rows;
+    }
+  });
+
+  // Team goals from scoreboard liveScores
+  const teamGoals = {};
+  MATCHES.forEach(m => {
+    const sc = liveScores[m.n];
+    if (!sc || sc.h === null) return;
+    teamGoals[m.home] = (teamGoals[m.home] || 0) + (sc.h || 0);
+    teamGoals[m.away] = (teamGoals[m.away] || 0) + (sc.a || 0);
+  });
+  const sorted = Object.entries(teamGoals).sort((a,b) => b[1]-a[1]).slice(0,15);
+  if (sorted.length) {
+    const max = sorted[0][1] || 1;
+    const el = document.getElementById('ts-goals');
+    if (el) el.innerHTML = sorted.map(([team, goals], i) => {
+      const flag = GROUPS[Object.keys(GROUPS).find(g => GROUPS[g].teams.find(t=>t.name===team))]?.teams.find(t=>t.name===team)?.flag || '';
+      return `<div class="team-stat-row"><span class="tsr-flag">${flag}</span><span class="tsr-name">${team}</span><div class="tsr-bar-wrap"><div class="tsr-bar" style="width:${Math.round((goals/max)*100)}%"></div></div><span class="tsr-val">${goals}</span></div>`;
+    }).join('');
+  }
+}
+
 function renderMatches() {
   const wrap = document.getElementById('matches-wrap');
   let filtered = MATCHES.filter(m => {
@@ -1016,6 +1237,7 @@ buildOverview();
 buildGroups();
 buildVenues();
 initLiveData(); // startet renderMatches() + Auto-Refresh
+fetchStats();   // Statistiken laden
 </script>
 </body>
 </html>
