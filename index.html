@@ -444,7 +444,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   <!-- ====== SCHEDULE TAB ====== -->
   <div class="tab" id="tab-schedule">
     <div class="sec-title">📅 Vollständiger Spielplan</div>
-    <div style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1rem;">
+    <div class="sched-sticky">
+    <div style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:.75rem;">
       <input type="text" class="sched-search" id="search-input" placeholder="🔍  Team, Stad oder Ort suchen..." oninput="filterMatches()">
     </div>
     <div class="sched-filters" id="sched-filters">
@@ -468,6 +469,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
       <button class="fbtn" data-filter="group-J" onclick="setFilter(this)">Gr. J</button>
       <button class="fbtn" data-filter="group-K" onclick="setFilter(this)">Gr. K</button>
       <button class="fbtn" data-filter="group-L" onclick="setFilter(this)">Gr. L</button>
+    </div>
     </div>
     <div class="live-bar">
       <div class="live-dot" id="live-dot"></div>
@@ -816,7 +818,44 @@ function showTab(id, btn) {
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
+
+// B – Wischgesten
+(function(){
+  const TABS = ['overview','groups','schedule','venues','stats'];
+  let tx = 0, ty = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) < 55 || Math.abs(dy) > Math.abs(dx)) return;
+    const cur = document.querySelector('.tab.active');
+    if (!cur) return;
+    const idx = TABS.indexOf(cur.id.replace('tab-',''));
+    const next = dx < 0 ? TABS[idx+1] : TABS[idx-1];
+    if (!next) return;
+    const nbtn = document.querySelector(`.nb[onclick*="'${next}'"]`);
+    if (nbtn) showTab(next, nbtn);
+  }, {passive:true});
+})();
+(function(){
+  const TABS = ['overview','groups','schedule','venues','stats'];
+  let tx = 0, ty = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) < 55 || Math.abs(dy) > Math.abs(dx)) return;
+    const cur = document.querySelector('.tab.active');
+    if (!cur) return;
+    const idx = TABS.indexOf(cur.id.replace('tab-',''));
+    const next = dx < 0 ? TABS[idx+1] : TABS[idx-1];
+    if (!next) return;
+    const nbtn = document.querySelector(`.nb[onclick*="'${next}'"]`);
+    if (nbtn) showTab(next, nbtn);
+  }, {passive:true});
+})();
 
 // =====================================================================
 // OVERVIEW: Confederation bars + Debütanten
