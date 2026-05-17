@@ -587,7 +587,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
     <div id="hist-cat-wm">
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
       <button class="stab active" id="stab-hist-wmsieger" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
-      <button class="stab" id="stab-hist-titelranking" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
+      <button class="stab" id="stab-hist-titelranking" onclick="showStatSection('titelranking',this)">🥇 WM-Rangliste</button>
+      <button class="stab" id="stab-hist-wmscorers" onclick="showStatSection('wmscorers',this)">⚽ WM-Torschützen</button>
     </div>
     </div>
 
@@ -595,6 +596,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
     <div id="hist-cat-em" style="display:none">
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
       <button class="stab active" id="stab-hist-emsieger" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
+      <button class="stab" id="stab-hist-emranking" onclick="showStatSection('emranking',this)">🥇 EM-Rangliste</button>
       <button class="stab" id="stab-hist-emscorers" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
     </div>
     </div>
@@ -656,23 +658,65 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 
     <!-- TITEL-RANKING -->
     <div id="stat-titelranking" style="display:none">
-      <div class="stats-section" style="max-width:560px">
-        <div class="stats-head">🥇 Titel-Ranking · WM &amp; EM kombiniert</div>
-        <div class="rank-head"><span>#</span><span>Land</span><span style="color:#4cc9f0">🌍 WM</span><span style="color:#9b5de5">🇪🇺 EM</span><span style="text-align:right">Gesamt</span></div>
-        <div class="rank-row"><span style="color:var(--gold);font-weight:800">1</span><span><strong>🇩🇪 Deutschland</strong></span><span class="rank-wm">4</span><span class="rank-em">3</span><span class="rank-total">7</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">2</span><span><strong>🇮🇹 Italien</strong></span><span class="rank-wm">4</span><span class="rank-em">2</span><span class="rank-total">6</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">3</span><span><strong>🇪🇸 Spanien</strong></span><span class="rank-wm">1</span><span class="rank-em">4</span><span class="rank-total">5</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">3</span><span><strong>🇧🇷 Brasilien</strong></span><span class="rank-wm">5</span><span class="rank-em">—</span><span class="rank-total">5</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">5</span><span><strong>🇫🇷 Frankreich</strong></span><span class="rank-wm">2</span><span class="rank-em">2</span><span class="rank-total">4</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">6</span><span><strong>🇦🇷 Argentinien</strong></span><span class="rank-wm">3</span><span class="rank-em">—</span><span class="rank-total">3</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">7</span><span><strong>🇺🇾 Uruguay</strong></span><span class="rank-wm">2</span><span class="rank-em">—</span><span class="rank-total">2</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</strong></span><span class="rank-wm">1</span><span class="rank-em">—</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇵🇹 Portugal</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇳🇱 Niederlande</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇬🇷 Griechenland</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇩🇰 Dänemark</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇷🇺 UdSSR / Russland</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
-        <div class="rank-row"><span style="color:var(--text2)">8</span><span><strong>🇨🇿 Tschechoslowakei</strong></span><span class="rank-wm">—</span><span class="rank-em">1</span><span class="rank-total">1</span></div>
+      <div class="stats-section" style="max-width:400px">
+        <div class="stats-head">🥇 WM-Rangliste · nach Titeln</div>
+        <div class="hist-head"><span>#</span><span>Land</span><span>Titel</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--gold);font-weight:800">1</span><span><strong>🇧🇷 Brasilien</strong></span><span style="color:var(--gold);font-weight:700">5</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">2</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--gold);font-weight:700">4</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">2</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--gold);font-weight:700">4</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">4</span><span><strong>🇦🇷 Argentinien</strong></span><span style="color:var(--gold);font-weight:700">3</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-weight:700">2</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇺🇾 Uruguay</strong></span><span style="color:var(--text2);font-weight:700">2</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">7</span><span><strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">7</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+      </div>
+    </div>
+
+    <!-- WM TORSCHÜTZEN HISTORISCH -->
+    <div id="stat-wmscorers" style="display:none">
+      <div class="stats-section" style="max-width:520px">
+        <div class="stats-head">⚽ WM-Torschützenkönige · alle Turniere</div>
+        <div class="scorer-head"><span>Jahr</span><span>Spieler</span><span>Tore</span></div>
+        <div class="scorer-row"><span class="yr">2022</span><span>🇫🇷 Kylian Mbappé</span><span class="scorer-goals">8</span></div>
+        <div class="scorer-row"><span class="yr">2018</span><span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Harry Kane</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">2014</span><span>🇨🇴 James Rodríguez</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">2010</span><span>🇩🇪 Thomas Müller <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">2006</span><span>🇩🇪 Miroslav Klose</span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">2002</span><span>🇧🇷 Ronaldo</span><span class="scorer-goals">8</span></div>
+        <div class="scorer-row"><span class="yr">1998</span><span>🇭🇷 Davor Šuker</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1994</span><span>🇷🇺 Oleg Salenko <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1990</span><span>🇮🇹 Salvatore Schillaci</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1986</span><span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Gary Lineker</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1982</span><span>🇮🇹 Paolo Rossi</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1978</span><span>🇦🇷 Mario Kempes</span><span class="scorer-goals">6</span></div>
+        <div class="scorer-row"><span class="yr">1974</span><span>🇵🇱 Grzegorz Lato</span><span class="scorer-goals">7</span></div>
+        <div class="scorer-row"><span class="yr">1970</span><span>🇩🇪 Gerd Müller</span><span class="scorer-goals">10</span></div>
+        <div class="scorer-row"><span class="yr">1966</span><span>🇵🇹 Eusébio</span><span class="scorer-goals">9</span></div>
+        <div class="scorer-row"><span class="yr">1962</span><span>🇧🇷 Garrincha <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">4</span></div>
+        <div class="scorer-row"><span class="yr">1958</span><span>🇫🇷 Just Fontaine</span><span class="scorer-goals">13</span></div>
+        <div class="scorer-row"><span class="yr">1954</span><span>🇭🇺 Sándor Kocsis</span><span class="scorer-goals">11</span></div>
+        <div class="scorer-row"><span class="yr">1950</span><span>🇧🇷 Ademir</span><span class="scorer-goals">9</span></div>
+        <div class="scorer-row"><span class="yr">1938</span><span>🇧🇷 Leônidas</span><span class="scorer-goals">7</span></div>
+        <div class="scorer-row"><span class="yr">1934</span><span>🇨🇿 Oldřich Nejedlý</span><span class="scorer-goals">5</span></div>
+        <div class="scorer-row"><span class="yr">1930</span><span>🇦🇷 Guillermo Stábile</span><span class="scorer-goals">8</span></div>
+      </div>
+    </div>
+
+    <!-- EM RANGLISTE HISTORISCH -->
+    <div id="stat-emranking" style="display:none">
+      <div class="stats-section" style="max-width:400px">
+        <div class="stats-head">🥇 EM-Rangliste · nach Titeln</div>
+        <div class="hist-head"><span>#</span><span>Land</span><span>Titel</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--gold);font-weight:800">1</span><span><strong>🇪🇸 Spanien</strong></span><span style="color:var(--gold);font-weight:700">4</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">2</span><span><strong>🇩🇪 Deutschland</strong></span><span style="color:var(--gold);font-weight:700">3</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">3</span><span><strong>🇫🇷 Frankreich</strong></span><span style="color:var(--text2);font-weight:700">2</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">3</span><span><strong>🇮🇹 Italien</strong></span><span style="color:var(--text2);font-weight:700">2</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇷🇺 UdSSR / Russland</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇨🇿 Tschechoslowakei</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇳🇱 Niederlande</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇩🇰 Dänemark</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇬🇷 Griechenland</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
+        <div class="hist-row"><span class="yr" style="color:var(--text2)">5</span><span><strong>🇵🇹 Portugal</strong></span><span style="color:var(--text2);font-weight:700">1</span></div>
       </div>
     </div>
 
@@ -1244,7 +1288,7 @@ function showHistCat(which, btn) {
 }
 
 function showStatSection(id, btn) {
-  ['scorers','standings','cards','teamstats','wmsieger','emsieger','titelranking','emscorers'].forEach(s => {
+  ['scorers','standings','cards','teamstats','wmsieger','emsieger','titelranking','wmscorers','emranking','emscorers'].forEach(s => {
     const el = document.getElementById('stat-'+s);
     if (el) el.style.display = s === id ? '' : 'none';
   });
