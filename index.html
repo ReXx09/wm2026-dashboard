@@ -273,6 +273,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .stats-tabs{display:flex;gap:.4rem;flex-wrap:wrap;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
 .stab{padding:.28rem .65rem;border-radius:6px;font-size:.74rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text2);transition:all .2s;}
 .stab.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.stab-main{padding:.45rem 1.2rem;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s;}
+.stab-main.active{background:var(--bg4);color:var(--text);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
 /* ========= VENUES ========= */
 .venues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;}
 .venue-card{
@@ -507,19 +509,21 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 
   <!-- ====== STATS TAB ====== -->
   <div class="tab" id="tab-stats">
-    <div class="sec-title">📈 Turnierstatistiken</div>
+    <div class="sec-title">📈 Statistiken</div>
 
-    <!-- Sub-navigation -->
+    <!-- Haupt-Kategorien -->
+    <div style="display:flex;gap:.6rem;margin-bottom:1.1rem;">
+      <button class="stab-main active" id="btn-stats-live" onclick="showStatsMain('live',this)">📈 WM 2026</button>
+      <button class="stab-main" id="btn-stats-hist" onclick="showStatsMain('hist',this)">📚 Historische Rekorde</button>
+    </div>
+
+    <!-- ══ LIVE STATS ══ -->
+    <div id="stats-live">
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
-      <button class="stab active" onclick="showStatSection('scorers',this)">🥅 Torschützen</button>
+      <button class="stab active" id="stab-live-scorers" onclick="showStatSection('scorers',this)">🥅 Torschützen</button>
       <button class="stab" onclick="showStatSection('standings',this)">📊 Standings</button>
       <button class="stab" onclick="showStatSection('cards',this)">🃏 Karten</button>
       <button class="stab" onclick="showStatSection('teamstats',this)">🏆 Mannschaftsstats</button>
-      <span style="width:1px;height:20px;background:var(--border);display:inline-block;vertical-align:middle;"></span>
-      <button class="stab" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
-      <button class="stab" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
-      <button class="stab" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
-      <button class="stab" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
     </div>
 
     <!-- TORSCHÜTZEN -->
@@ -565,6 +569,16 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
           <div id="ts-poss" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
         </div>
       </div>
+    </div>
+    </div><!-- /stats-live -->
+
+    <!-- ══ HISTORISCHE REKORDE ══ -->
+    <div id="stats-hist" style="display:none">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <button class="stab active" id="stab-hist-wmsieger" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
+      <button class="stab" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
+      <button class="stab" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
+      <button class="stab" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
     </div>
 
     <!-- WM SIEGER HISTORISCH -->
@@ -668,6 +682,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
         <div class="scorer-row"><span class="yr">1960</span><span>🇷🇺 Valentin Ivanov <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
       </div>
     </div>
+    </div><!-- /stats-hist -->
 
     <div style="margin-top:1rem;display:flex;align-items:center;gap:.75rem;">
       <span id="stats-last-update" style="font-size:.73rem;color:var(--text3);">Noch nicht geladen</span>
@@ -1187,6 +1202,17 @@ const ESPN_STANDINGS = 'https://site.api.espn.com/apis/v2/sports/soccer/FIFA.WC/
 const ESPN_LEADERS   = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WC/leaders';
 
 let activeStatSection = 'scorers';
+
+function showStatsMain(which, btn) {
+  ['live','hist'].forEach(id => {
+    const el = document.getElementById('stats-'+id);
+    if (el) el.style.display = id === which ? '' : 'none';
+  });
+  document.querySelectorAll('.stab-main').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (which === 'live') showStatSection('scorers', document.getElementById('stab-live-scorers'));
+  if (which === 'hist') showStatSection('wmsieger', document.getElementById('stab-hist-wmsieger'));
+}
 
 function showStatSection(id, btn) {
   ['scorers','standings','cards','teamstats','wmsieger','emsieger','titelranking','emscorers'].forEach(s => {
