@@ -2,9 +2,10 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FIFA WM 2026 Dashboard</title>
 <style>
+html,body{overflow-x:hidden;}
 :root {
   --bg: #080d1a;
   --bg2: #0f1729;
@@ -313,6 +314,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   .mname{font-size:.72rem;}
   .groups-grid{grid-template-columns:1fr;}
   .venues-grid{grid-template-columns:1fr;}
+  .ov-stats{grid-template-columns:repeat(2,1fr);}
+  .winners-grid{grid-template-columns:1fr !important;}
 }
 
 /* ========= TOOLTIP ========= */
@@ -430,7 +433,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
     </div>
 
     <!-- WM & EM Sieger -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.5rem;">
+    <div class="winners-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.5rem;">
       <!-- WM Sieger -->
       <div class="card">
         <div class="sec-title">🌍 FIFA WM-Sieger (alle)</div>
