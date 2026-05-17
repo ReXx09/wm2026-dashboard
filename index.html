@@ -30,7 +30,6 @@ header{
   border-bottom:2px solid var(--gold);
   padding:1rem 2rem;
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
-  position:sticky;top:0;z-index:200;
 }
 .hd-left{display:flex;align-items:center;gap:1rem;}
 .hd-trophy{font-size:3rem;filter:drop-shadow(0 0 12px #f0b42988);}
@@ -61,6 +60,7 @@ header{
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
 
 /* ========= NAV ========= */
+#sticky-top{position:sticky;top:0;z-index:200;}
 nav{
   background:var(--bg2);border-bottom:1px solid var(--border);
   padding:0 2rem;display:flex;overflow-x:auto;gap:.1rem;
@@ -322,6 +322,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 <body>
 
 <!-- HEADER -->
+<div id="sticky-top">
 <header>
   <div class="hd-left">
     <div class="hd-trophy">🏆</div>
@@ -355,8 +356,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   <button class="nb" onclick="showTab('venues',this)"><span class="icon">🏟️</span>Stadien</button>
   <button class="nb" onclick="showTab('stats',this)"><span class="icon">📈</span>Statistiken</button>
 </nav>
-
-<!-- MAIN -->
+</div>
 <main>
 
   <!-- ====== OVERVIEW TAB ====== -->
