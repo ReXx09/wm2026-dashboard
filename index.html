@@ -1141,7 +1141,7 @@ function renderMatches() {
         if (m.group !== activeFilter.replace('group-','')) return false;
       } else if (activeFilter.startsWith('phase-')) {
         const ph = activeFilter.replace('phase-','');
-        if (m.phase !== ph && m.group !== ph) return false;
+        if (m.phase !== ph) return false;
       }
     }
     if (searchVal) {
