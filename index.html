@@ -275,6 +275,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .stab.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
 .stab-main{padding:.45rem 1.2rem;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s;}
 .stab-main.active{background:var(--bg4);color:var(--text);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+.stab-cat{padding:.35rem .9rem;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all .2s;}
+.stab-cat.active{background:rgba(255,255,255,.06);color:var(--text);border-color:rgba(255,255,255,.2);}
 /* ========= VENUES ========= */
 .venues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;}
 .venue-card{
@@ -574,11 +576,27 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 
     <!-- ══ HISTORISCHE REKORDE ══ -->
     <div id="stats-hist" style="display:none">
+
+    <!-- WM / EM Hauptkategorie -->
+    <div style="display:flex;gap:.5rem;margin-bottom:.9rem;">
+      <button class="stab-cat active" id="btn-hist-wm" onclick="showHistCat('wm',this)">🌍 Weltmeisterschaft</button>
+      <button class="stab-cat" id="btn-hist-em" onclick="showHistCat('em',this)">🇪🇺 Europameisterschaft</button>
+    </div>
+
+    <!-- WM Rekorde -->
+    <div id="hist-cat-wm">
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
       <button class="stab active" id="stab-hist-wmsieger" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
-      <button class="stab" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
-      <button class="stab" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
-      <button class="stab" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
+      <button class="stab" id="stab-hist-titelranking" onclick="showStatSection('titelranking',this)">🥇 Titel-Ranking</button>
+    </div>
+    </div>
+
+    <!-- EM Rekorde -->
+    <div id="hist-cat-em" style="display:none">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <button class="stab active" id="stab-hist-emsieger" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
+      <button class="stab" id="stab-hist-emscorers" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
+    </div>
     </div>
 
     <!-- WM SIEGER HISTORISCH -->
@@ -1211,7 +1229,18 @@ function showStatsMain(which, btn) {
   document.querySelectorAll('.stab-main').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (which === 'live') showStatSection('scorers', document.getElementById('stab-live-scorers'));
-  if (which === 'hist') showStatSection('wmsieger', document.getElementById('stab-hist-wmsieger'));
+  if (which === 'hist') showHistCat('wm', document.getElementById('btn-hist-wm'));
+}
+
+function showHistCat(which, btn) {
+  ['wm','em'].forEach(id => {
+    const el = document.getElementById('hist-cat-'+id);
+    if (el) el.style.display = id === which ? '' : 'none';
+  });
+  document.querySelectorAll('.stab-cat').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (which === 'wm') showStatSection('wmsieger', document.getElementById('stab-hist-wmsieger'));
+  if (which === 'em') showStatSection('emsieger', document.getElementById('stab-hist-emsieger'));
 }
 
 function showStatSection(id, btn) {
