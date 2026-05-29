@@ -170,6 +170,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gtable td{padding:.45rem .75rem;font-size:.82rem;border-top:1px solid var(--border);text-align:center;vertical-align:middle;}
 .gtable th:first-child,.gtable td:first-child{text-align:left;width:38%;}
 .gtable tr:hover td{background:var(--bg4);}
+.squad-row{cursor:pointer;-webkit-tap-highlight-color:rgba(240,180,41,.18);}
+.squad-row:active td{background:rgba(240,180,41,.12);}
 .team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(0,1fr);align-items:center;gap:.45rem;min-width:0;width:100%;}
 .tpos{
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -2977,7 +2979,11 @@ function openGroupModal(letter){
       if(myG>opG)s++; else if(myG===opG)u++; else n++;
     });
     const pts=s*3+u, td=tf-tg;
-    return `<tr>
+    const safeN = t.name.replace(/'/g,"\\'");
+    const hasSquad = SQUADS && SQUADS[t.name];
+    const rowClass = hasSquad ? ' class="squad-row"' : '';
+    const rowClick = hasSquad ? ` onclick="openSquadModal('${safeN}',event)"` : '';
+    return `<tr${rowClass}${rowClick}>
       <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div>${flagImg(t.flag, t.name)}${teamNameMarkup(t.name, t)}</div></td>
       <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
       <td>${tf}</td><td>${tg}</td>
