@@ -83,6 +83,15 @@ nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 .nb.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;}
 .nb .icon{font-size:1rem;}
 
+/* TV/Remote focus visibility */
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible {
+  outline:none;
+  border-color:var(--gold) !important;
+  box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);
+}
+
 /* ========= MAIN ========= */
 main{max-width:1400px;margin:0 auto;padding:2rem;}
 .tab{display:none;animation:fadeUp .3s ease;}
@@ -785,7 +794,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
   <div class="gmodal" id="gmodal">
     <div class="gmodal-head" id="gmodal-head">
       <span id="gmodal-title"></span>
-      <button class="gmodal-close" onclick="document.getElementById('gmodal-overlay').style.display='none'">✕</button>
+      <button class="gmodal-close" id="gmodal-close-btn" onclick="closeGroupModal('force')">✕</button>
     </div>
     <div class="gmodal-body">
       <table class="gtable" id="gmodal-table">
@@ -1565,15 +1574,53 @@ buildGroups();
 buildVenues();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
+initRemoteSupport();
+
+let lastFocusBeforeModal = null;
 
 function closeGroupModal(e){
-  if(e.target === document.getElementById('gmodal-overlay'))
-    document.getElementById('gmodal-overlay').style.display='none';
+  const overlay = document.getElementById('gmodal-overlay');
+  if (!overlay) return;
+  if (!e || e === 'force' || e.target === overlay) {
+    overlay.style.display='none';
+    if (lastFocusBeforeModal && typeof lastFocusBeforeModal.focus === 'function') {
+      lastFocusBeforeModal.focus();
+    }
+  }
+}
+
+function initRemoteSupport(){
+  // Make non-native clickable elements selectable via remote (Enter/OK)
+  document.querySelectorAll('[onclick]').forEach(el => {
+    const nativeInteractive = el.matches('button,a,input,select,textarea');
+    if (!nativeInteractive && !el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if (!nativeInteractive && !el.hasAttribute('role')) el.setAttribute('role','button');
+    if (el.dataset.remoteBound === '1' || el.hasAttribute('onkeydown')) return;
+    el.addEventListener('keydown', evt => {
+      if (evt.key === 'Enter' || evt.key === ' ' || evt.key === 'NumpadEnter') {
+        evt.preventDefault();
+        el.click();
+      }
+    });
+    el.dataset.remoteBound = '1';
+  });
+
+  // Back/ESC closes modal in TV browsers
+  document.addEventListener('keydown', evt => {
+    if (evt.key === 'Escape' || evt.key === 'Backspace') {
+      const overlay = document.getElementById('gmodal-overlay');
+      if (overlay && overlay.style.display !== 'none') {
+        evt.preventDefault();
+        closeGroupModal('force');
+      }
+    }
+  });
 }
 
 function openGroupModal(letter){
   const g = GROUPS[letter];
   if(!g) return;
+  lastFocusBeforeModal = document.activeElement;
 
   // Header
   const head = document.getElementById('gmodal-head');
@@ -1630,6 +1677,8 @@ function openGroupModal(letter){
     }).join('');
 
   document.getElementById('gmodal-overlay').style.display='flex';
+  const closeBtn = document.getElementById('gmodal-close-btn');
+  if (closeBtn) closeBtn.focus();
 }
 
 // PWA Icon + Manifest
