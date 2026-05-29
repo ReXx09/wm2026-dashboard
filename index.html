@@ -163,6 +163,19 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .pts-cell{font-weight:800;color:var(--text);}
 .gd-pos{color:var(--green);}
 .gd-neg{color:var(--red);}
+/* ========= GROUP MODAL ========= */
+.gmodal-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.gmodal{background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:640px;overflow:hidden;animation:modalIn .22s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);}}
+.gmodal-head{padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:1rem;color:#000;}
+.gmodal-close{background:rgba(0,0,0,.25);border:none;color:#000;font-size:1.2rem;cursor:pointer;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:900;}
+.gmodal-body{padding:1rem;}
+.gmodal-matches{margin-top:1rem;}
+.gm-match{display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:9px;border:1px solid var(--border);margin-bottom:.45rem;background:var(--bg3);font-size:.8rem;gap:.5rem;}
+.gm-teams{display:flex;align-items:center;gap:.4rem;flex:1;justify-content:center;}
+.gm-score{font-size:.95rem;font-weight:800;color:var(--gold);min-width:40px;text-align:center;}
+.gm-date{font-size:.68rem;color:var(--text3);min-width:70px;}
+.gm-live{font-size:.65rem;color:var(--green);font-weight:800;animation:blink 1s infinite;}
 .debut-tag{background:rgba(46,196,182,.15);color:var(--green);font-size:.5rem;font-weight:700;padding:.1em .3em;border-radius:3px;text-transform:uppercase;border:1px solid rgba(46,196,182,.3);}
 
 /* ========= SCHEDULE ========= */
@@ -765,6 +778,41 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 
 </main>
 
+<!-- GROUP DETAIL MODAL -->
+<div class="gmodal-overlay" id="gmodal-overlay" style="display:none" onclick="closeGroupModal(event)">
+  <div class="gmodal" id="gmodal">
+    <div class="gmodal-head" id="gmodal-head">
+      <span id="gmodal-title"></span>
+      <button class="gmodal-close" onclick="document.getElementById('gmodal-overlay').style.display='none'">✕</button>
+    </div>
+    <div class="gmodal-body">
+      <table class="gtable" id="gmodal-table">
+        <thead><tr>
+          <th>Team</th><th title="Gespielt">Sp</th><th title="Siege">S</th><th title="Unentschieden">U</th>
+          <th title="Niederlagen">N</th><th title="Tore">T</th><th title="Gegentore">GT</th>
+          <th title="Tordifferenz">TD</th><th title="Punkte">Pkt</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="gmodal-matches" id="gmodal-matches"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP DETAIL MODAL -->
+<div class="gmodal-overlay" id="gmodal-overlay" style="display:none" onclick="closeGroupModal(event)">
+  <div class="gmodal" id="gmodal">
+    <div class="gmodal-head" id="gmodal-head">
+      <span id="gmodal-title"></span>
+      <button class="gmodal-close" onclick="document.getElementById('gmodal-overlay').style.display='none'">✕</button>
+    </div>
+    <div class="gmodal-body">
+      <table class="gtable" id="gmodal-table"><tbody></tbody></table>
+      <div class="gmodal-matches" id="gmodal-matches"></div>
+    </div>
+  </div>
+</div>
+
 <footer style="text-align:center;padding:.75rem 1rem;border-top:1px solid var(--border);margin-top:1rem;">
   <span style="font-size:.7rem;color:var(--text3);">© 2026 @Bocki</span>
 </footer>
@@ -1117,8 +1165,8 @@ function buildGroups() {
         <td class="pts-cell">0</td>
       </tr>`;
     }).join('');
-    grid.innerHTML += `<div class="group-card">
-      <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter}</div>
+    grid.innerHTML += `<div class="group-card" style="cursor:pointer" onclick="openGroupModal('${letter}')">
+      <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter} <span style="margin-left:auto;font-size:.7rem;opacity:.75">▶ Details</span></div>
       <table class="gtable">
         <thead><tr>
           <th>Team</th><th title="Gespielt">Sp</th><th title="Siege">S</th><th title="Unentschieden">U</th>
@@ -1515,6 +1563,76 @@ buildGroups();
 buildVenues();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
+
+function closeGroupModal(e){
+  if(e.target === document.getElementById('gmodal-overlay'))
+    document.getElementById('gmodal-overlay').style.display='none';
+}
+
+function openGroupModal(letter){
+  const g = GROUPS[letter];
+  if(!g) return;
+
+  // Header
+  const head = document.getElementById('gmodal-head');
+  head.style.background = g.color;
+  document.getElementById('gmodal-title').textContent = '⚽ Gruppe ' + letter;
+
+  // Tabelle
+  const tbody = document.querySelector('#gmodal-table tbody');
+  tbody.innerHTML = g.teams.map((t,i)=>{
+    const posClass = i<2?'p12':i===2?'p3':'p4';
+    let sp=0,s=0,u=0,n=0,tf=0,tg=0;
+    MATCHES.forEach(m=>{
+      if(m.group!==letter) return;
+      const ls = liveScores[m.num];
+      if(!ls||(!ls.live&&!ls.done)) return;
+      const isH=m.h===t.name, isA=m.a===t.name;
+      if(!isH&&!isA) return;
+      const gh=parseInt(ls.h)||0, ga=parseInt(ls.a)||0;
+      sp++;
+      tf+= isH?gh:ga; tg+= isH?ga:gh;
+      const myG=isH?gh:ga, opG=isH?ga:gh;
+      if(myG>opG)s++; else if(myG===opG)u++; else n++;
+    });
+    const pts=s*3+u, td=tf-tg;
+    return `<tr>
+      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span><span class="tname">${t.name}</span>${t.host?'<span class="host-tag">Gastgeber</span>':''}</div></td>
+      <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
+      <td>${tf}</td><td>${tg}</td>
+      <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
+      <td class="pts-cell">${pts}</td>
+    </tr>`;
+  }).join('');
+
+  // Spiele dieser Gruppe
+  const matchDiv = document.getElementById('gmodal-matches');
+  const groupMatches = MATCHES.filter(m=>m.group===letter);
+  matchDiv.innerHTML = '<div style="font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">Spiele</div>'
+    + groupMatches.map(m=>{
+      const ls = liveScores[m.num];
+      const hasScore = ls&&(ls.live||ls.done);
+      const score = hasScore ? `${ls.h} : ${ls.a}` : '–';
+      const isLive = ls&&ls.live;
+      const isDone = ls&&ls.done;
+      const dateStr = m.date ? m.date.split('T')[0] : '';
+      const timeStr = m.date && m.date.includes('T') ? m.date.split('T')[1].slice(0,5) : '';
+      const dateLabel = dateStr ? formatDate(dateStr)+(timeStr?' '+timeStr:'') : '';
+      const hFlag = g.teams.find(t=>t.name===m.h)?.flag||'';
+      const aFlag = g.teams.find(t=>t.name===m.a)?.flag||'';
+      return `<div class="gm-match">
+        <span class="gm-date">${dateLabel}</span>
+        <div class="gm-teams">
+          <span>${hFlag} ${m.h}</span>
+          <span class="gm-score" style="${isLive?'color:var(--green)':isDone?'color:var(--text)':''}">${score}</span>
+          <span>${m.a} ${aFlag}</span>
+        </div>
+        ${isLive?'<span class="gm-live">🔴 LIVE</span>':isDone?'<span style="font-size:.65rem;color:var(--text3)">✓</span>':''}
+      </div>`;
+    }).join('');
+
+  document.getElementById('gmodal-overlay').style.display='flex';
+}
 
 // PWA Icon + Manifest
 (function(){
