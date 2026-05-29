@@ -368,7 +368,7 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   background:linear-gradient(135deg,#0d1f4a,#05101f);
   position:relative;
 }
-.vh-flag{position:absolute;right:1rem;top:1rem;font-size:2rem;opacity:.5;}
+.vh-flag{position:absolute;right:1rem;top:1rem;font-size:2rem;opacity:.45;line-height:0;}
 .vh-country{
   display:inline-flex;align-items:center;gap:.3rem;
   background:rgba(255,255,255,.07);border-radius:999px;padding:.2rem .6rem;
@@ -3493,11 +3493,18 @@ function renderMatches() {
 function buildVenues() {
   const grid = document.getElementById('venues-grid');
   VENUES.forEach(v => {
+    const code = FLAG_CODES[v.country];
+    const flagBig    = code
+      ? `<img src="https://flagcdn.com/48x36/${code}.png" style="width:36px;height:27px;object-fit:cover;border-radius:3px;" alt="${v.country}" loading="lazy">`
+      : v.flag;
+    const flagSmall  = code
+      ? `<img src="https://flagcdn.com/24x18/${code}.png" style="height:12px;vertical-align:middle;border-radius:2px;" alt="" loading="lazy">`
+      : v.flag;
     const finalBadge = v.isFinal ? `<div class="final-badge">🏆 Finale · 19. Juli 2026</div>` : '';
     grid.innerHTML += `<div class="venue-card">
       <div class="vh">
-        <span class="vh-flag">${v.flag}</span>
-        <div class="vh-country">${v.flag} ${v.country}</div>
+        <span class="vh-flag">${flagBig}</span>
+        <div class="vh-country">${flagSmall} ${v.country}</div>
         <div class="vh-city">${v.city}</div>
         <div class="vh-stadium">${v.stadium}</div>
         ${finalBadge}
