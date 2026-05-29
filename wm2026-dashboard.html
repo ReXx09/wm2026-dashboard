@@ -2569,12 +2569,20 @@ function searchPlayers() {
 // KO-BAUM
 // =====================================================================
 const BRACKET_ROUNDS = [
-  {id:'R32', label:'Rd. d. letzten 32', nums: [73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
+  {id:'R32a', label:'Rd. 32 · 1. vs 2.', subtitle:'Gruppensieger vs. Gruppenzweiter', nums: [73,75,76,78,83,84,86,88]},
+  {id:'R32b', label:'Rd. 32 · Bester 3.', subtitle:'Gruppensieger vs. Bester Dritter', nums: [74,77,79,80,81,82,85,87], third:true},
   {id:'R16', label:'Achtelfinale',      nums: [89,90,91,92,93,94,95,96]},
   {id:'QF',  label:'Viertelfinale',     nums: [97,98,99,100]},
   {id:'SF',  label:'Halbfinale',        nums: [101,102]},
   {id:'F',   label:'Finale',            nums: [104]},
 ];
+
+function formatThird(name) {
+  // "Bester 3. (A/B/C/D/F)" → kompakt mit grüner Badge
+  const match = name.match(/\(([^)]+)\)/);
+  const groups = match ? match[1] : '?';
+  return `<span style="font-size:.72rem;color:var(--green);">Bester 3.</span><span style="font-size:.68rem;color:var(--text3);margin-left:3px;">(${groups})</span>`;
+}
 
 function bracketTeamName(name) {
   if (!name) return '<span style="color:var(--text3);font-size:.72rem;">TBD</span>';
@@ -2590,26 +2598,30 @@ function buildBracket() {
   MATCHES.forEach(m => matchMap[m.n] = m);
   let html = '<div class="bracket-outer">';
   BRACKET_ROUNDS.forEach(round => {
-    html += `<div class="bracket-round">`;
-    html += `<div class="bracket-round-label">${round.label}</div>`;
+    const borderColor = round.third ? 'rgba(46,196,182,.35)' : 'rgba(255,255,255,.06)';
+    html += `<div class="bracket-round" style="border:1px solid ${borderColor};border-radius:12px;padding:.6rem;">`;
+    html += `<div class="bracket-round-label" style="${round.third?'color:var(--green);background:rgba(46,196,182,.1);':''}">${round.label}</div>`;
+    if (round.subtitle) html += `<div style="font-size:.6rem;color:var(--text3);text-align:center;margin-bottom:.5rem;padding:0 .3rem;">${round.subtitle}</div>`;
     round.nums.forEach(n => {
       const m = matchMap[n];
       if (!m) return;
       const ls = liveScores[m.n];
       const hasScore = ls && (ls.live || ls.done);
       const isLive = ls && ls.live;
-      const gc = GROUP_COLORS[m.group] || '#888';
       const hScore = hasScore ? ls.h : '';
       const aScore = hasScore ? ls.a : '';
       const hWin = hasScore && ls.done && parseInt(ls.h) > parseInt(ls.a);
       const aWin = hasScore && ls.done && parseInt(ls.a) > parseInt(ls.h);
+      // Bester-3.-Platzhalter kompakt darstellen
+      const homeDisplay = m.home.startsWith('Bester 3.') ? formatThird(m.home) : bracketTeamName(m.home);
+      const awayDisplay = m.away.startsWith('Bester 3.') ? formatThird(m.away) : bracketTeamName(m.away);
       html += `<div class="bracket-match">`;
       html += `<div class="bracket-team ${hWin?'bwin':''} ${isLive?'bliver':''}">`;
-      html += bracketTeamName(m.home);
+      html += homeDisplay;
       if (hasScore) html += `<span class="bscore">${hScore}</span>`;
       html += `</div>`;
       html += `<div class="bracket-team ${aWin?'bwin':''} ${isLive?'bliver':''}">`;
-      html += bracketTeamName(m.away);
+      html += awayDisplay;
       if (hasScore) html += `<span class="bscore">${aScore}</span>`;
       html += `</div>`;
       html += `<div class="bracket-meta">📅 ${m.date ? formatDate(m.date) : '–'} · ${m.city}</div>`;
