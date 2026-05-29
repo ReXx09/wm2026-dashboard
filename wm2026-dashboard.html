@@ -3464,11 +3464,13 @@ function renderMatches() {
       } else {
         scoreHtml = `<span class="mscore upcoming">– : –</span>`;
       }
+      const hFlagImg = FLAG_CODES[m.home] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.home]}.png" alt="${m.home}" loading="lazy">` : `<span class="mflag">${m.hf}</span>`;
+      const aFlagImg = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}" loading="lazy">` : `<span class="mflag">${m.af}</span>`;
       const finalStyle = m.phase === 'Finale' ? 'background:linear-gradient(135deg,#1e2a10,#162038);' : '';
       const isFavMatch = favTeam && (m.home === favTeam || m.away === favTeam);
       html += `<div class="match-card${isFavMatch?' fav-highlight':''}" data-group="${m.group}" style="${finalStyle}">
         <div class="mteam">
-          <span class="mflag">${m.hf}</span>
+          <span class="mflag">${hFlagImg}</span>
           <span class="mname">${m.home}</span>
         </div>
         <div class="mcenter">
@@ -3478,7 +3480,7 @@ function renderMatches() {
           <div class="minfo">${m.city}</div>
         </div>
         <div class="mteam away">
-          <span class="mflag">${m.af}</span>
+          <span class="mflag">${aFlagImg}</span>
           <span class="mname">${m.away}</span>
         </div>
       </div>`;
@@ -3731,9 +3733,9 @@ function openGroupModal(letter){
       return `<div class="gm-match">
         <span class="gm-date">${dateLabel}</span>
         <div class="gm-teams">
-          <span>${m.hf} ${m.home}</span>
+          <span>${FLAG_CODES[m.home]?`<img src="https://flagcdn.com/24x18/${FLAG_CODES[m.home]}.png" style="height:11px;vertical-align:middle;border-radius:2px;margin-right:2px;" loading="lazy" alt="">`:m.hf+' '}${m.home}</span>
           <span class="gm-score" style="${isLive?'color:var(--green)':isDone?'color:var(--text)':''}">${score}</span>
-          <span>${m.away} ${m.af}</span>
+          <span>${m.away}${FLAG_CODES[m.away]?` <img src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" style="height:11px;vertical-align:middle;border-radius:2px;margin-left:2px;" loading="lazy" alt="">`:' '+m.af}</span>
         </div>
         ${isLive?'<span class="gm-live">🔴 LIVE</span>':isDone?'<span style="font-size:.65rem;color:var(--text3)">✓</span>':''}
       </div>`;
