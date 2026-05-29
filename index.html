@@ -2384,6 +2384,9 @@ function showTab(id, btn) {
       const si = document.getElementById('player-search-input');
       if (si) si.focus();
     }, 150);
+  } else {
+    // Fire TV: Fokus nach Tab-Wechsel explizit auf Nav-Button setzen
+    setTimeout(() => btn.focus(), 50);
   }
 }
 
@@ -3198,6 +3201,57 @@ document.addEventListener('keydown', evt => {
     }
   }
 });
+
+// =====================================================================
+// FIRE TV D-PAD NAVIGATION
+// =====================================================================
+(function() {
+  // Beim ersten Laden: Fokus auf aktiven Nav-Button setzen
+  window.addEventListener('load', function() {
+    const activeNav = document.querySelector('nav .nb.active');
+    if (activeNav) activeNav.focus();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    const focused = document.activeElement;
+    // Nicht in Input-Feldern eingreifen
+    if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) return;
+    // Nicht in offenen Modals eingreifen
+    const inModal = focused && (focused.closest('#gmodal-overlay') || focused.closest('#squad-overlay'));
+    if (inModal) return;
+
+    const navBtns = Array.from(document.querySelectorAll('nav .nb'));
+    const inNav = navBtns.includes(focused);
+
+    // Pfeil Hoch aus dem Inhalt heraus → zurück zur Nav
+    if (e.key === 'ArrowUp' && !inNav) {
+      const activeNav = document.querySelector('nav .nb.active');
+      if (activeNav) { e.preventDefault(); activeNav.focus(); }
+      return;
+    }
+
+    if (inNav) {
+      const idx = navBtns.indexOf(focused);
+      // Pfeil Links/Rechts → zwischen Tab-Buttons navigieren + Tab wechseln
+      if (e.key === 'ArrowLeft' && idx > 0) {
+        e.preventDefault();
+        navBtns[idx - 1].focus();
+        navBtns[idx - 1].click();
+      } else if (e.key === 'ArrowRight' && idx < navBtns.length - 1) {
+        e.preventDefault();
+        navBtns[idx + 1].focus();
+        navBtns[idx + 1].click();
+      } else if (e.key === 'ArrowDown') {
+        // Pfeil Runter → erstes fokussierbares Element im aktiven Tab
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab) {
+          const first = activeTab.querySelector('a, button, input');
+          if (first) { e.preventDefault(); first.focus(); }
+        }
+      }
+    }
+  });
+})();
 
 function closeGroupModal(e){
   const overlay = document.getElementById('gmodal-overlay');
