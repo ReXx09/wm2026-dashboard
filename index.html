@@ -3243,6 +3243,7 @@ async function fetchLiveData() {
     }
     if(tsEl) tsEl.textContent = `Zuletzt: ${lastFetch.toLocaleTimeString('de-DE')}`;
     renderMatches();
+    buildBracket();
   } catch(err) {
     console.warn('ESPN API:', err);
     if(dot) dot.classList.remove('on');
