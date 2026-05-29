@@ -417,6 +417,19 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 .scorer-row{display:grid;grid-template-columns:2.5rem 1fr 2.5rem;align-items:center;gap:.5rem;padding:.35rem .4rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
 .scorer-row:last-child{border-bottom:none;}
 .scorer-goals{color:var(--gold);font-weight:700;text-align:right;}
+/* all-time table */
+.at-head{display:grid;grid-template-columns:2rem 1fr 3rem 2.5rem;gap:.4rem;padding:.28rem .8rem;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.at-row{display:grid;grid-template-columns:2rem 1fr 3rem 2.5rem;align-items:center;gap:.4rem;padding:.32rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;}
+.at-row:last-child{border-bottom:none;}
+.at-goals{color:var(--gold);font-weight:700;text-align:right;}
+/* host table */
+.host-head{display:grid;grid-template-columns:2.5rem 1fr 1fr 2.5rem;gap:.4rem;padding:.28rem .5rem;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.host-row{display:grid;grid-template-columns:2.5rem 1fr 1fr 2.5rem;align-items:center;gap:.4rem;padding:.32rem .5rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;}
+.host-row:last-child{border-bottom:none;}
+/* curiosity cards */
+.curiosity-item{background:rgba(255,255,255,.04);border-radius:8px;padding:.55rem .85rem;border-left:3px solid var(--gold);margin-bottom:.4rem;}
+.curiosity-title{font-size:.8rem;font-weight:700;color:var(--text);}
+.curiosity-desc{font-size:.75rem;color:var(--text2);margin-top:.15rem;}
 /* ========= TOOLTIP ========= */
 [title]{cursor:help;}
 </style>
@@ -612,6 +625,10 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <button class="stab" onclick="showStatSection('standings',this)">📊 Standings</button>
       <button class="stab" onclick="showStatSection('cards',this)">🃏 Karten</button>
       <button class="stab" onclick="showStatSection('teamstats',this)">🏆 Mannschaftsstats</button>
+      <button class="stab" onclick="showStatSection('assists',this)">🎯 Assists</button>
+      <button class="stab" onclick="showStatSection('cleansheets',this)">🧤 Clean Sheets</button>
+      <button class="stab" onclick="showStatSection('clubs',this)">🏟️ Vereine</button>
+      <button class="stab" onclick="showStatSection('confederations',this)">🌍 Konföderationen</button>
     </div>
 
     <!-- TORSCHÜTZEN -->
@@ -658,6 +675,41 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
         </div>
       </div>
     </div>
+
+    <!-- ASSISTS -->
+    <div id="stat-assists" style="display:none">
+      <div class="stats-section">
+        <div class="stats-head">🎯 Top Vorlagengeber</div>
+        <div id="assists-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart (11. Juni 2026)</div></div>
+      </div>
+    </div>
+
+    <!-- CLEAN SHEETS -->
+    <div id="stat-cleansheets" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+        <div class="stats-section">
+          <div class="stats-head">🧤 Clean Sheets · Torhüter</div>
+          <div id="cleansheets-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart (11. Juni 2026)</div></div>
+        </div>
+        <div class="stats-section">
+          <div class="stats-head">🛡️ Clean Sheets · Mannschaften</div>
+          <div id="cleansheets-teams-body" class="stats-body"><div class="stats-empty">⏳ Daten verfügbar ab Turnierstart</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VEREINE -->
+    <div id="stat-clubs" style="display:none">
+      <div class="stats-section" style="max-width:520px">
+        <div class="stats-head">🏟️ Vereine nach WM-Spielern 2026</div>
+        <div id="clubs-body" class="stats-body"></div>
+      </div>
+    </div>
+
+    <!-- KONFÖDERATIONEN -->
+    <div id="stat-confederations" style="display:none">
+      <div id="confederations-wrap"></div>
+    </div>
     </div><!-- /stats-live -->
 
     <!-- ══ HISTORISCHE REKORDE ══ -->
@@ -675,6 +727,9 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <button class="stab active" id="stab-hist-wmsieger" onclick="showStatSection('wmsieger',this)">🌍 WM-Sieger</button>
       <button class="stab" id="stab-hist-titelranking" onclick="showStatSection('titelranking',this)">🥇 WM-Rangliste</button>
       <button class="stab" id="stab-hist-wmscorers" onclick="showStatSection('wmscorers',this)">⚽ WM-Torschützen</button>
+      <button class="stab" id="stab-hist-wmalltime" onclick="showStatSection('wmalltime',this)">🏅 Alle Zeiten</button>
+      <button class="stab" id="stab-hist-hosts" onclick="showStatSection('hosts',this)">🏆 Gastgeber</button>
+      <button class="stab" id="stab-hist-curiosities" onclick="showStatSection('curiosities',this)">📋 Kuriositäten</button>
     </div>
     </div>
 
@@ -828,6 +883,77 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
         <div class="scorer-row"><span class="yr">1968</span><span>🇷🇸 Dragan Džajić</span><span class="scorer-goals">2</span></div>
         <div class="scorer-row"><span class="yr">1964</span><span>🇪🇸 Jesús Pereda <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
         <div class="scorer-row"><span class="yr">1960</span><span>🇷🇺 Valentin Ivanov <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
+      </div>
+    </div>
+
+    <!-- WM REKORDTORSCHÜTZEN ALLE ZEITEN -->
+    <div id="stat-wmalltime" style="display:none">
+      <div class="stats-section" style="max-width:540px">
+        <div class="stats-head">🏅 WM-Rekordtorschützen · alle Turniere</div>
+        <div class="at-head"><span>#</span><span>Spieler · Land</span><span>Span</span><span style="text-align:right">Tore</span></div>
+        <div class="at-row"><span style="color:var(--gold);font-weight:800">1</span><span><strong>Miroslav Klose</strong><br><small style="color:var(--text3)">🇩🇪 Deutschland</small></span><span style="color:var(--text3);font-size:.72rem">2002–14</span><span class="at-goals">16</span></div>
+        <div class="at-row"><span style="color:var(--text2)">2</span><span><strong>Ronaldo</strong><br><small style="color:var(--text3)">🇧🇷 Brasilien</small></span><span style="color:var(--text3);font-size:.72rem">1994–06</span><span class="at-goals">15</span></div>
+        <div class="at-row"><span style="color:var(--text2)">3</span><span><strong>Gerd Müller</strong><br><small style="color:var(--text3)">🇩🇪 Deutschland</small></span><span style="color:var(--text3);font-size:.72rem">1970–74</span><span class="at-goals">14</span></div>
+        <div class="at-row"><span style="color:var(--text2)">4</span><span><strong>Just Fontaine</strong><br><small style="color:var(--text3)">🇫🇷 Frankreich</small></span><span style="color:var(--text3);font-size:.72rem">1958</span><span class="at-goals">13</span></div>
+        <div class="at-row"><span style="color:var(--text2)">5</span><span><strong>Pelé</strong><br><small style="color:var(--text3)">🇧🇷 Brasilien</small></span><span style="color:var(--text3);font-size:.72rem">1958–70</span><span class="at-goals">12</span></div>
+        <div class="at-row"><span style="color:var(--text2)">6</span><span><strong>Sándor Kocsis</strong><br><small style="color:var(--text3)">🇭🇺 Ungarn</small></span><span style="color:var(--text3);font-size:.72rem">1954</span><span class="at-goals">11</span></div>
+        <div class="at-row"><span style="color:var(--text2)">6</span><span><strong>Jürgen Klinsmann</strong><br><small style="color:var(--text3)">🇩🇪 Deutschland</small></span><span style="color:var(--text3);font-size:.72rem">1990–98</span><span class="at-goals">11</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Helmut Rahn</strong><br><small style="color:var(--text3)">🇩🇪 Deutschland</small></span><span style="color:var(--text3);font-size:.72rem">1954–58</span><span class="at-goals">10</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Teófilo Cubillas</strong><br><small style="color:var(--text3)">🇵🇪 Peru</small></span><span style="color:var(--text3);font-size:.72rem">1970–78</span><span class="at-goals">10</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Grzegorz Lato</strong><br><small style="color:var(--text3)">🇵🇱 Polen</small></span><span style="color:var(--text3);font-size:.72rem">1974–82</span><span class="at-goals">10</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Gary Lineker</strong><br><small style="color:var(--text3)">England</small></span><span style="color:var(--text3);font-size:.72rem">1986–90</span><span class="at-goals">10</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Gabriel Batistuta</strong><br><small style="color:var(--text3)">🇦🇷 Argentinien</small></span><span style="color:var(--text3);font-size:.72rem">1994–02</span><span class="at-goals">10</span></div>
+        <div class="at-row"><span style="color:var(--text2)">8</span><span><strong>Thomas Müller</strong><br><small style="color:var(--text3)">🇩🇪 Deutschland</small></span><span style="color:var(--text3);font-size:.72rem">2010–18</span><span class="at-goals">10</span></div>
+      </div>
+    </div>
+
+    <!-- WM GASTGEBER -->
+    <div id="stat-hosts" style="display:none">
+      <div class="stats-section" style="max-width:580px">
+        <div class="stats-head">🏆 FIFA WM-Gastgeber · alle Turniere</div>
+        <div class="host-head"><span>Jahr</span><span>Gastgeber</span><span>Weltmeister</span><span style="text-align:right">Teams</span></div>
+        <div class="host-row"><span class="yr" style="color:var(--gold)">2026</span><span style="font-weight:600">USA / Kanada / Mexiko</span><span style="color:var(--text3);font-size:.75rem">– (läuft)</span><span style="text-align:right;color:var(--gold);font-weight:700">48</span></div>
+        <div class="host-row"><span class="yr">2022</span><span>Katar</span><span style="color:var(--text2)">Argentinien</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">2018</span><span>Russland</span><span style="color:var(--text2)">Frankreich</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">2014</span><span>Brasilien</span><span style="color:var(--text2)">Deutschland</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">2010</span><span>Südafrika</span><span style="color:var(--text2)">Spanien</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">2006</span><span>Deutschland</span><span style="color:var(--text2)">Italien</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">2002</span><span>Japan / Südkorea</span><span style="color:var(--text2)">Brasilien</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">1998</span><span>Frankreich</span><span style="color:var(--text2)">Frankreich</span><span style="text-align:right;color:var(--text3)">32</span></div>
+        <div class="host-row"><span class="yr">1994</span><span>USA</span><span style="color:var(--text2)">Brasilien</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">1990</span><span>Italien</span><span style="color:var(--text2)">Deutschland</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">1986</span><span>Mexiko</span><span style="color:var(--text2)">Argentinien</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">1982</span><span>Spanien</span><span style="color:var(--text2)">Italien</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">1978</span><span>Argentinien</span><span style="color:var(--text2)">Argentinien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1974</span><span>Deutschland</span><span style="color:var(--text2)">Deutschland</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1970</span><span>Mexiko</span><span style="color:var(--text2)">Brasilien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1966</span><span>England</span><span style="color:var(--text2)">England</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1962</span><span>Chile</span><span style="color:var(--text2)">Brasilien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1958</span><span>Schweden</span><span style="color:var(--text2)">Brasilien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1954</span><span>Schweiz</span><span style="color:var(--text2)">Deutschland</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1950</span><span>Brasilien</span><span style="color:var(--text2)">Uruguay</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1938</span><span>Frankreich</span><span style="color:var(--text2)">Italien</span><span style="text-align:right;color:var(--text3)">15</span></div>
+        <div class="host-row"><span class="yr">1934</span><span>Italien</span><span style="color:var(--text2)">Italien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1930</span><span>Uruguay</span><span style="color:var(--text2)">Uruguay</span><span style="text-align:right;color:var(--text3)">13</span></div>
+      </div>
+    </div>
+
+    <!-- KURIOSITÄTEN -->
+    <div id="stat-curiosities" style="display:none">
+      <div class="stats-section" style="max-width:640px">
+        <div class="stats-head">📋 WM-Kuriositäten &amp; Rekorde</div>
+        <div style="padding:.75rem 1rem;">
+          <div class="curiosity-item"><div class="curiosity-title">⚡ Schnellstes Tor</div><div class="curiosity-desc">Hakan Şükür (Türkei) &ndash; 11 Sekunden vs. Südkorea &middot; WM 2002</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">👴 Ältester Spieler</div><div class="curiosity-desc">Essam El-Hadary (Ägypten) &ndash; 45 Jahre &amp; 161 Tage &middot; WM 2018</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">⚽ Jüngster WM-Torschütze</div><div class="curiosity-desc">Pelé (Brasilien) &ndash; 17 Jahre &amp; 239 Tage vs. Wales &middot; WM 1958</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🎯 Meiste Tore in einem Spiel</div><div class="curiosity-desc">Oleg Salenko (Russland) &ndash; 5 Tore vs. Kamerun &middot; WM 1994</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🏆 Höchster WM-Sieg</div><div class="curiosity-desc">Ungarn 10:1 El Salvador &middot; WM 1982</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🟥 Schnellste Rote Karte</div><div class="curiosity-desc">José Batista (Uruguay) &ndash; 56 Sekunden vs. Schottland &middot; WM 1986</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🔄 Meiste WM-Turniere als Spieler</div><div class="curiosity-desc">Antonio Carbajal (Mexiko) &amp; Lothar Matthäus (Deutschland) &ndash; je 5 Turniere</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">⚽ Meiste WM-Tore aller Zeiten</div><div class="curiosity-desc">Miroslav Klose (Deutschland) &ndash; 16 Tore in 4 Turnieren (2002&ndash;2014)</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">📊 Meiste Tore in einem Turnier</div><div class="curiosity-desc">Just Fontaine (Frankreich) &ndash; 13 Tore in 6 Spielen &middot; WM 1958</div></div>
+          <div class="curiosity-item" style="margin-bottom:0"><div class="curiosity-title">🌍 Größtes WM-Turnier aller Zeiten</div><div class="curiosity-desc">WM 2026 &ndash; erstmals 48 Mannschaften, 3 Gastgeberländer, 16 Austragungsstädte</div></div>
+        </div>
       </div>
     </div>
     </div><!-- /stats-hist -->
@@ -2580,6 +2706,29 @@ const BRACKET_ROUNDS = [
   {id:'F',   label:'Finale',            nums: [104]},
 ];
 
+const TEAM_CONFEDERATION = {
+  // UEFA
+  'Tschechien':'UEFA','Bosnien-Herzegowina':'UEFA','Schweiz':'UEFA','Schottland':'UEFA',
+  'Türkei':'UEFA','Deutschland':'UEFA','Niederlande':'UEFA','Schweden':'UEFA',
+  'Belgien':'UEFA','Spanien':'UEFA','Frankreich':'UEFA','Norwegen':'UEFA',
+  'Österreich':'UEFA','Portugal':'UEFA','England':'UEFA','Kroatien':'UEFA',
+  // CONMEBOL
+  'Brasilien':'CONMEBOL','Paraguay':'CONMEBOL','Ecuador':'CONMEBOL',
+  'Uruguay':'CONMEBOL','Argentinien':'CONMEBOL','Kolumbien':'CONMEBOL',
+  // CONCACAF
+  'Mexiko':'CONCACAF','Kanada':'CONCACAF','Haiti':'CONCACAF',
+  'USA':'CONCACAF','Curaçao':'CONCACAF','Panama':'CONCACAF',
+  // CAF
+  'Südafrika':'CAF','Marokko':'CAF','Elfenbeinküste':'CAF','Tunesien':'CAF',
+  'Ägypten':'CAF','Kap Verde':'CAF','Senegal':'CAF','Algerien':'CAF',
+  'DR Kongo':'CAF','Ghana':'CAF',
+  // AFC
+  'Südkorea':'AFC','Katar':'AFC','Australien':'AFC','Japan':'AFC',
+  'Iran':'AFC','Saudi-Arabien':'AFC','Irak':'AFC','Jordanien':'AFC','Usbekistan':'AFC',
+  // OFC
+  'Neuseeland':'OFC',
+};
+
 function formatThird(name) {
   // "Bester 3. (A/B/C/D/F)" → kompakt mit grüner Badge
   const match = name.match(/\(([^)]+)\)/);
@@ -2635,6 +2784,88 @@ function buildBracket() {
   });
   html += '</div>';
   wrap.innerHTML = html;
+}
+
+function buildClubStats() {
+  const clubCount = {};
+  Object.entries(SQUADS).forEach(([, players]) => {
+    players.forEach(p => {
+      const club = p.club || 'Unbekannt';
+      clubCount[club] = (clubCount[club] || 0) + 1;
+    });
+  });
+  const sorted = Object.entries(clubCount).sort((a,b) => b[1]-a[1]).slice(0,25);
+  const max = sorted[0]?.[1] || 1;
+  const el = document.getElementById('clubs-body');
+  if (!el) return;
+  el.innerHTML = sorted.map(([club, count], i) =>
+    `<div class="team-stat-row"><span style="font-size:.72rem;color:var(--text3);min-width:22px;text-align:right;flex-shrink:0;">${i+1}</span><span class="tsr-name">${club}</span><div class="tsr-bar-wrap"><div class="tsr-bar" style="width:${Math.round((count/max)*100)}%"></div></div><span class="tsr-val">${count}</span></div>`
+  ).join('');
+}
+
+function buildConfederations() {
+  const wrap = document.getElementById('confederations-wrap');
+  if (!wrap) return;
+  const CONF_META = {
+    'UEFA':    {label:'UEFA',     region:'Europa',                          color:'#3f6cb5', titles:12},
+    'CONMEBOL':{label:'CONMEBOL', region:'Südamerika',                       color:'#f0b429', titles:10},
+    'CONCACAF':{label:'CONCACAF', region:'Nord-/Mittelamerika & Karibik',   color:'#e63946', titles:0},
+    'CAF':     {label:'CAF',      region:'Afrika',                          color:'#2ec4b6', titles:0},
+    'AFC':     {label:'AFC',      region:'Asien',                           color:'#ff6b35', titles:0},
+    'OFC':     {label:'OFC',      region:'Ozeanien',                        color:'#8ecae6', titles:0},
+  };
+  const confTeams = {};
+  Object.keys(CONF_META).forEach(k => confTeams[k] = []);
+  Object.entries(GROUPS).forEach(([, g]) => {
+    g.teams.forEach(t => {
+      const conf = TEAM_CONFEDERATION[t.name];
+      if (conf) confTeams[conf].push(t);
+    });
+  });
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">';
+  Object.entries(CONF_META).forEach(([key, meta]) => {
+    const teams = confTeams[key] || [];
+    const titlesTxt = meta.titles > 0
+      ? `<span style="color:var(--gold);font-weight:700">${meta.titles}&times;🏆 Titel</span>`
+      : `<span style="color:var(--text3)">0 Titel</span>`;
+    const teamList = teams.map(t => {
+      const code = FLAG_CODES[t.name];
+      const flag = code ? `<img src="https://flagcdn.com/24x18/${code}.png" alt="" style="width:14px;vertical-align:middle;margin-right:3px;">` : '';
+      return `<span style="display:inline-flex;align-items:center;background:rgba(255,255,255,.05);border-radius:5px;padding:.12rem .35rem;margin:.1rem;font-size:.7rem;">${flag}${t.name}</span>`;
+    }).join('');
+    html += `<div class="stats-section" style="border-color:${meta.color}44;">
+      <div class="stats-head" style="background:${meta.color}1a;border-bottom-color:${meta.color}33;">
+        <span>${meta.label}</span>
+        <span style="font-size:.7rem;color:var(--text3);margin-left:auto;">${meta.region}</span>
+      </div>
+      <div style="padding:.45rem .9rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);">
+        <span style="font-size:.78rem;color:var(--text2);">${teams.length} Teams</span>
+        ${titlesTxt}
+      </div>
+      <div style="padding:.5rem .8rem .6rem;line-height:1.9;">${teamList}</div>
+    </div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function buildCleanSheets() {
+  const csCount = {};
+  MATCHES.forEach(m => {
+    const sc = liveScores[m.n];
+    if (!sc || !sc.done) return;
+    if (parseInt(sc.a) === 0) csCount[m.home] = (csCount[m.home] || 0) + 1;
+    if (parseInt(sc.h) === 0) csCount[m.away] = (csCount[m.away] || 0) + 1;
+  });
+  const sorted = Object.entries(csCount).sort((a,b) => b[1]-a[1]);
+  if (!sorted.length) return;
+  const max = sorted[0][1] || 1;
+  const el = document.getElementById('cleansheets-teams-body');
+  if (el) el.innerHTML = sorted.map(([team, cs], i) => {
+    const code = FLAG_CODES[team];
+    const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="" style="vertical-align:middle;margin-right:4px;">` : '';
+    return `<div class="team-stat-row"><span style="font-size:.72rem;color:var(--text3);min-width:22px;text-align:right;flex-shrink:0;">${i+1}</span><span class="tsr-name">${flag}${team}</span><div class="tsr-bar-wrap"><div class="tsr-bar" style="background:var(--green);width:${Math.round((cs/max)*100)}%"></div></div><span class="tsr-val">${cs}</span></div>`;
+  }).join('');
 }
 
 // B – Wischgesten (einmalig registriert)
@@ -2957,7 +3188,7 @@ function showHistCat(which, btn) {
 }
 
 function showStatSection(id, btn) {
-  ['scorers','standings','cards','teamstats','wmsieger','emsieger','titelranking','wmscorers','emranking','emscorers'].forEach(s => {
+  ['scorers','standings','cards','teamstats','assists','cleansheets','clubs','confederations','wmsieger','emsieger','titelranking','wmscorers','wmalltime','hosts','curiosities','emranking','emscorers'].forEach(s => {
     const el = document.getElementById('stat-'+s);
     if (el) el.style.display = s === id ? '' : 'none';
   });
@@ -2978,6 +3209,7 @@ async function fetchStats() {
     const lData  = lRes.status  === 'fulfilled' ? lRes.value  : null;
     if (stData) renderStandings(stData);
     if (lData)  renderLeaders(lData);
+    buildCleanSheets();
     if (tsEl) tsEl.textContent = 'Aktualisiert: ' + new Date().toLocaleTimeString('de-DE');
   } catch(e) {
     console.warn('Stats fetch error:', e);
@@ -3044,6 +3276,7 @@ function renderLeaders(data) {
       : isRed    ? 'red-body'
       : isShots  ? 'ts-shots'
       : isPoss   ? 'ts-poss'
+      : isAssist ? 'assists-body'
       : null;
     if (container) {
       const el = document.getElementById(container);
@@ -3178,6 +3411,8 @@ buildOverview();
 buildGroups();
 buildVenues();
 buildBracket();
+buildClubStats();
+buildConfederations();
 initFavorite();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
