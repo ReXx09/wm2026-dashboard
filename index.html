@@ -161,7 +161,6 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .group-link:focus-visible .group-card{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);}
 .group-head{padding:.7rem 1rem;font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.5rem;color:#000;}
 .gtable{width:100%;border-collapse:collapse;}
-.gtable{table-layout:fixed;}
 .gtable th{
   background:rgba(0,0,0,.25);padding:.35rem .75rem;font-size:.65rem;
   color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:center;
@@ -179,12 +178,10 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .p3{background:var(--gold);color:#000;}
 .p4{background:var(--text3);color:#fff;}
 .tflag{font-size:1.15rem;}
-.tname{font-weight:500;font-size:.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;flex:1;}
-.ticker{display:block;min-width:0;overflow:hidden;white-space:nowrap;position:relative;flex:1;}
-.ticker > span{display:inline-block;min-width:100%;padding-right:1.5rem;}
-.group-link:focus .ticker > span,
-.group-link:focus-visible .ticker > span{animation:ticker-scroll 7s linear infinite;}
-@keyframes ticker-scroll{0%{transform:translateX(0);}100%{transform:translateX(-45%);}}
+.tname{font-weight:500;font-size:.82rem;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tname-marquee{position:relative;overflow:hidden;}
+.tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
+@keyframes tnameMarquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
 .host-tag{background:var(--gold);color:#000;font-size:.5rem;font-weight:900;padding:.1em .35em;border-radius:3px;text-transform:uppercase;}
 .pts-cell{font-weight:800;color:var(--text);}
 .gd-pos{color:var(--green);}
@@ -1169,16 +1166,19 @@ function buildOverview() {
   });
 }
 
+function teamNameMarkup(name) {
+  if (name.length > 12) {
+    return `<span class="tname tname-marquee" title="${name}"><span class="tname-inner">${name}</span></span>`;
+  }
+  return `<span class="tname" title="${name}">${name}</span>`;
+}
+
 // =====================================================================
 // GROUPS
 // =====================================================================
 function buildGroups() {
   const grid = document.getElementById('groups-grid');
   Object.entries(GROUPS).forEach(([letter,g]) => {
-    const teamLabel = (name) => {
-      if (name.length > 14) return `<span class="ticker"><span>${name}</span></span>`;
-      return `<span class="tname">${name}</span>`;
-    };
     const teamsHTML = g.teams.map((t,i) => {
       const posClass = i < 2 ? 'p12' : i === 2 ? 'p3' : 'p4';
       const hostTag = t.host ? `<span class="host-tag">Gastgeber</span>` : '';
@@ -1187,7 +1187,7 @@ function buildGroups() {
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
           <span class="tflag">${t.flag}</span>
-          ${teamLabel(t.name)}
+          ${teamNameMarkup(t.name)}
           ${hostTag}${debutTag}
         </div></td>
         <td>0</td><td>0</td><td>0</td><td>0</td>
@@ -1648,7 +1648,7 @@ function openGroupModal(letter){
     });
     const pts=s*3+u, td=tf-tg;
     return `<tr>
-      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span><span class="tname">${t.name}</span>${t.host?'<span class="host-tag">Gastgeber</span>':''}</div></td>
+      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name)}${t.host?'<span class="host-tag">Gastgeber</span>':''}</div></td>
       <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
       <td>${tf}</td><td>${tg}</td>
       <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
