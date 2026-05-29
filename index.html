@@ -2986,11 +2986,10 @@ function buildOverview() {
     </div>`;
   });
   const debList = document.getElementById('debut-list');
-  const debuts = [{n:'Curaçao',f:'🇨🇼'},{n:'Kap Verde',f:'🇨🇻'},{n:'Jordanien',f:'🇯🇴'},{n:'Usbekistan',f:'🇺🇿'}];
+  const debuts = [{n:'Curaçao',c:'cw'},{n:'Kap Verde',c:'cv'},{n:'Jordanien',c:'jo'},{n:'Usbekistan',c:'uz'}];
   debuts.forEach(d => {
-    debList.innerHTML += `<div style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);border-radius:8px;padding:.5rem .8rem;font-size:.85rem;font-weight:600;">
-      ${d.f} ${d.n}
-    </div>`;
+    const flagImg = `<img src="https://flagcdn.com/24x18/${d.c}.png" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:5px;" loading="lazy" alt="">`;
+    debList.innerHTML += `<div style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);border-radius:8px;padding:.5rem .8rem;font-size:.85rem;font-weight:600;display:inline-flex;align-items:center;">${flagImg}${d.n}</div>`;
   });
 }
 
@@ -3058,6 +3057,7 @@ function patchEmojiFlags() {
     'stat-wmsieger','stat-emsieger','stat-titelranking',
     'stat-wmscorers','stat-emranking','stat-emscorers',
     'stat-wmalltime','stat-emalltime','stat-emhosts',
+    'tab-overview',
   ];
   const imgTag = code =>
     `<img src="https://flagcdn.com/24x18/${code}.png" ` +
