@@ -172,6 +172,23 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gtable tr:hover td{background:var(--bg4);}
 .squad-row{cursor:pointer;-webkit-tap-highlight-color:rgba(240,180,41,.18);}
 .squad-row:active td{background:rgba(240,180,41,.12);}
+/* ── KO-BAUM ── */
+.bracket-outer{display:flex;gap:1.25rem;overflow-x:auto;padding-bottom:1rem;align-items:flex-start;}
+.bracket-outer::-webkit-scrollbar{height:4px;}
+.bracket-outer::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.bracket-round{display:flex;flex-direction:column;gap:.75rem;min-width:200px;flex-shrink:0;}
+.bracket-round-label{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;padding:.25rem .5rem;background:rgba(240,180,41,.08);border-radius:6px;text-align:center;}
+.bracket-match{background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.bracket-team{display:flex;align-items:center;gap:.45rem;padding:.45rem .7rem;font-size:.82rem;border-bottom:1px solid var(--border);}
+.bracket-team:last-of-type{border-bottom:none;}
+.bracket-team .bscore{margin-left:auto;font-weight:800;font-size:.9rem;color:var(--text);}
+.bracket-team.bwin{background:rgba(46,196,182,.1);color:var(--green);}
+.bracket-team.bwin .bscore{color:var(--green);}
+.bracket-team.bliver{background:rgba(240,180,41,.07);}
+.bracket-meta{font-size:.62rem;color:var(--text3);padding:.25rem .7rem .35rem;background:rgba(0,0,0,.2);}
+/* ── FAVORITEN ── */
+.fav-highlight .mteam .mname,.fav-highlight .mteam.away .mname{color:var(--gold);font-weight:800;}
+.fav-highlight{border:1px solid rgba(240,180,41,.45) !important;}
 .team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(0,1fr);align-items:center;gap:.45rem;min-width:0;width:100%;}
 .tpos{
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -438,8 +455,10 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   <button class="nb active" onclick="showTab('overview',this)"><span class="icon">🏠</span>Übersicht</button>
   <button class="nb" onclick="showTab('groups',this)"><span class="icon">🗂️</span>Gruppen</button>
   <button class="nb" onclick="showTab('schedule',this)"><span class="icon">📅</span>Spielplan</button>
+  <button class="nb" id="nb-bracket" onclick="showTab('bracket',this)"><span class="icon">🏆</span>KO-Baum</button>
   <button class="nb" onclick="showTab('venues',this)"><span class="icon">🏟️</span>Stadien</button>
   <button class="nb" onclick="showTab('stats',this)"><span class="icon">📈</span>Statistiken</button>
+  <button class="nb" onclick="showTab('search',this)"><span class="icon">🔍</span>Spielersuche</button>
 </nav>
 </div>
 <main>
@@ -537,25 +556,30 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
     </div>
     <div class="sched-filters" id="sched-filters">
       <button class="fbtn active" data-filter="all" onclick="setFilter(this)">Alle</button>
-      <button class="fbtn round-btn" data-filter="phase-Gruppenphase" onclick="setFilter(this)">Gruppenphase</button>
-      <button class="fbtn round-btn" data-filter="phase-R32" onclick="setFilter(this)">Rd. d. letzten 32</button>
-      <button class="fbtn round-btn" data-filter="phase-R16" onclick="setFilter(this)">Achtelfinale</button>
-      <button class="fbtn round-btn" data-filter="phase-QF" onclick="setFilter(this)">Viertelfinale</button>
-      <button class="fbtn round-btn" data-filter="phase-SF" onclick="setFilter(this)">Halbfinale</button>
-      <button class="fbtn round-btn" data-filter="phase-F" onclick="setFilter(this)">Finale</button>
-      <span style="width:1px;height:20px;background:var(--border);"></span>
-      <button class="fbtn" data-filter="group-A" onclick="setFilter(this)">Gr. A</button>
-      <button class="fbtn" data-filter="group-B" onclick="setFilter(this)">Gr. B</button>
-      <button class="fbtn" data-filter="group-C" onclick="setFilter(this)">Gr. C</button>
-      <button class="fbtn" data-filter="group-D" onclick="setFilter(this)">Gr. D</button>
-      <button class="fbtn" data-filter="group-E" onclick="setFilter(this)">Gr. E</button>
-      <button class="fbtn" data-filter="group-F" onclick="setFilter(this)">Gr. F</button>
-      <button class="fbtn" data-filter="group-G" onclick="setFilter(this)">Gr. G</button>
-      <button class="fbtn" data-filter="group-H" onclick="setFilter(this)">Gr. H</button>
-      <button class="fbtn" data-filter="group-I" onclick="setFilter(this)">Gr. I</button>
-      <button class="fbtn" data-filter="group-J" onclick="setFilter(this)">Gr. J</button>
-      <button class="fbtn" data-filter="group-K" onclick="setFilter(this)">Gr. K</button>
-      <button class="fbtn" data-filter="group-L" onclick="setFilter(this)">Gr. L</button>
+      <span style="width:1px;height:20px;background:var(--border);flex-shrink:0"></span>
+      <button class="fbtn" data-filter="phase-Gruppenphase" onclick="setFilter(this)">Gruppenphase</button>
+      <button class="fbtn" data-filter="phase-R32" onclick="setFilter(this)">Rd. 32</button>
+      <button class="fbtn" data-filter="phase-R16" onclick="setFilter(this)">Achtelfinale</button>
+      <button class="fbtn" data-filter="phase-QF" onclick="setFilter(this)">Viertelfinale</button>
+      <button class="fbtn" data-filter="phase-SF" onclick="setFilter(this)">Halbfinale</button>
+      <button class="fbtn" data-filter="phase-F" onclick="setFilter(this)">Finale</button>
+      <span style="width:1px;height:20px;background:var(--border);flex-shrink:0"></span>
+      <button class="fbtn fav-filter-btn" id="fav-filter-btn" data-filter="fav" onclick="setFilter(this)" style="display:none">⭐ Mein Team</button>
+      <button class="fbtn" onclick="toggleGroupFilters()" id="grp-toggle-btn">Gruppen ▾</button>
+      <div id="grp-filter-row" style="display:none;width:100%;flex-wrap:wrap;gap:.4rem;padding-top:.3rem;">
+        <button class="fbtn" data-filter="group-A" onclick="setFilter(this)">A</button>
+        <button class="fbtn" data-filter="group-B" onclick="setFilter(this)">B</button>
+        <button class="fbtn" data-filter="group-C" onclick="setFilter(this)">C</button>
+        <button class="fbtn" data-filter="group-D" onclick="setFilter(this)">D</button>
+        <button class="fbtn" data-filter="group-E" onclick="setFilter(this)">E</button>
+        <button class="fbtn" data-filter="group-F" onclick="setFilter(this)">F</button>
+        <button class="fbtn" data-filter="group-G" onclick="setFilter(this)">G</button>
+        <button class="fbtn" data-filter="group-H" onclick="setFilter(this)">H</button>
+        <button class="fbtn" data-filter="group-I" onclick="setFilter(this)">I</button>
+        <button class="fbtn" data-filter="group-J" onclick="setFilter(this)">J</button>
+        <button class="fbtn" data-filter="group-K" onclick="setFilter(this)">K</button>
+        <button class="fbtn" data-filter="group-L" onclick="setFilter(this)">L</button>
+      </div>
     </div>
     </div>
     <div class="live-bar">
@@ -814,6 +838,21 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
     </div>
   </div>
 
+  <!-- ====== KO-BAUM TAB ====== -->
+  <div class="tab" id="tab-bracket">
+    <div class="sec-title">🏆 KO-Baum · ab Runde der letzten 32</div>
+    <div id="bracket-wrap"></div>
+  </div>
+
+  <!-- ====== SPIELERSUCHE TAB ====== -->
+  <div class="tab" id="tab-search">
+    <div class="sec-title">🔍 Spielersuche · alle 48 Kader</div>
+    <div style="max-width:520px;margin-bottom:1rem;">
+      <input type="text" class="sched-search" id="player-search-input" placeholder="Spielername eingeben…" oninput="searchPlayers()" autocomplete="off">
+    </div>
+    <div id="player-search-results"><div style="color:var(--text3);font-size:.9rem;">Mindestens 2 Zeichen eingeben…</div></div>
+  </div>
+
   <!-- ====== VENUES TAB ====== -->
   <div class="tab" id="tab-venues">
     <div class="sec-title">🏟️ Austragungsstadien</div>
@@ -851,6 +890,12 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <button class="gmodal-close" id="squad-close-btn" onclick="closeSquadModal('force')">✕</button>
     </div>
     <div class="gmodal-body" id="squad-body"></div>
+    <div style="padding:.75rem 1rem;border-top:1px solid var(--border);text-align:center;">
+      <button id="fav-squad-btn" onclick="setFavorite(document.getElementById('squad-title').dataset.team)"
+        style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.5rem 1.2rem;font-size:.82rem;cursor:pointer;">
+        ☆ Als Favorit pinnen
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2330,11 +2375,211 @@ function showTab(id, btn) {
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
+  if (id === 'search') {
+    setTimeout(() => {
+      const si = document.getElementById('player-search-input');
+      if (si) si.focus();
+    }, 150);
+  }
+}
+
+function toggleGroupFilters() {
+  const row = document.getElementById('grp-filter-row');
+  const btn = document.getElementById('grp-toggle-btn');
+  const open = row.style.display !== 'none';
+  row.style.display = open ? 'none' : 'flex';
+  btn.textContent = open ? 'Gruppen ▾' : 'Gruppen ▴';
+}
+
+// =====================================================================
+// FAVORITEN
+// =====================================================================
+let favTeam = null;
+
+function initFavorite() {
+  favTeam = localStorage.getItem('wm26_fav') || null;
+  renderFavBtn();
+  const fb = document.getElementById('fav-filter-btn');
+  if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+}
+
+function renderFavBtn() {
+  if (!favTeam) return;
+  const fb = document.getElementById('fav-filter-btn');
+  if (fb) {
+    fb.style.display = 'inline-flex';
+    fb.textContent = '⭐ ' + favTeam;
+    fb.dataset.filter = 'fav';
+  }
+}
+
+function setFavorite(name) {
+  if (favTeam === name) {
+    favTeam = null;
+    localStorage.removeItem('wm26_fav');
+  } else {
+    favTeam = name;
+    localStorage.setItem('wm26_fav', name);
+  }
+  renderFavBtn();
+  const fb = document.getElementById('fav-filter-btn');
+  if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+  // Kader-Modals neu rendern um Star-Button zu aktualisieren
+  const title = document.getElementById('squad-title');
+  if (title && title.dataset && title.dataset.team) renderSquadFavBtn(title.dataset.team);
+}
+
+function renderSquadFavBtn(teamName) {
+  const btn = document.getElementById('fav-squad-btn');
+  if (!btn) return;
+  const isFav = favTeam === teamName;
+  btn.textContent = isFav ? '⭐ Als Favorit entfernen' : '☆ Als Favorit pinnen';
+  btn.style.background = isFav ? 'rgba(240,180,41,.2)' : 'rgba(255,255,255,.06)';
+}
+
+// =====================================================================
+// NÄCHSTES SPIEL WIDGET
+// =====================================================================
+function updateNextMatchWidget() {
+  const wrap = document.getElementById('next-match-widget');
+  if (!wrap) return;
+  const now = new Date();
+  let next = null;
+  for (const m of MATCHES) {
+    if (!m.date) continue;
+    const timeStr = m.time.replace(/\+1$/,'').replace(/\+1/,'');
+    const [hh,mm] = timeStr.split(':').map(Number);
+    const dt = new Date(m.date + 'T' + String(hh).padStart(2,'0') + ':' + String(mm||0).padStart(2,'0') + ':00');
+    const ls = liveScores[m.n];
+    if (ls && ls.done) continue;
+    if (ls && ls.live) { next = {m, dt, live:true}; break; }
+    if (dt > now) { next = {m, dt, live:false}; break; }
+  }
+  if (!next) { wrap.innerHTML = ''; return; }
+  const {m, dt, live} = next;
+  const gc = GROUP_COLORS[m.group] || '#888';
+  const phLabel = m.phase === 'Gruppenphase' ? 'Gruppe ' + m.group : (PHASE_LABELS[m.phase] || m.phase);
+  const ls = liveScores[m.n];
+  const scoreStr = (ls && ls.live) ? `<span style="color:var(--green);font-size:1.5rem;font-weight:900">${ls.h} : ${ls.a}</span><span style="color:var(--green);font-size:.75rem;margin-left:.5rem">🔴 LIVE ${ls.clock||''}</span>` : `<span style="color:var(--text3);font-size:1rem">vs</span>`;
+  const hFlag = FLAG_CODES[m.home] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.home]}.png" alt="${m.home}">` : m.hf;
+  const aFlag = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}">` : m.af;
+  wrap.innerHTML = `<div style="background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid rgba(240,180,41,.35);border-radius:14px;padding:1rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;">
+    <div style="flex:0 0 auto;">
+      <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;">${live ? '🔴 JETZT LIVE' : '⏭ Nächstes Spiel'}</div>
+      <span class="mgroup-badge" style="background:${gc};color:#000;">${phLabel}</span>
+    </div>
+    <div style="flex:1 1 auto;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:.4rem;">${hFlag}<span style="font-weight:700">${m.home}</span></div>
+      ${scoreStr}
+      <div style="display:flex;align-items:center;gap:.4rem;"><span style="font-weight:700">${m.away}</span>${aFlag}</div>
+    </div>
+    <div style="flex:0 0 auto;font-size:.75rem;color:var(--text2);text-align:right;">
+      📅 ${formatDate(m.date)}<br>🕐 ${m.time.replace('+1','')} Uhr<br>🏟️ ${m.city}
+    </div>
+  </div>`;
+}
+
+// =====================================================================
+// SPIELERSUCHE
+// =====================================================================
+function searchPlayers() {
+  const q = document.getElementById('player-search-input').value.trim().toLowerCase();
+  const wrap = document.getElementById('player-search-results');
+  if (q.length < 2) {
+    wrap.innerHTML = '<div style="color:var(--text3);font-size:.9rem;">Mindestens 2 Zeichen eingeben…</div>';
+    return;
+  }
+  const results = [];
+  Object.entries(SQUADS).forEach(([team, players]) => {
+    players.forEach(p => {
+      if (p.name.toLowerCase().includes(q)) {
+        results.push({team, player: p});
+      }
+    });
+  });
+  if (!results.length) {
+    wrap.innerHTML = '<div style="color:var(--text3);font-size:.9rem;">Kein Spieler gefunden.</div>';
+    return;
+  }
+  const posOrder = {GK:0, DEF:1, MID:2, FWD:3};
+  const posLabel = {GK:'TW', DEF:'ABW', MID:'MF', FWD:'ST'};
+  const posColor = {GK:'#4361ee', DEF:'#2ec4b6', MID:'#f0b429', FWD:'#e63946'};
+  let html = `<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;">${results.length} Ergebnis${results.length!==1?'se':''}</div>`;
+  results.forEach(({team, player:p}) => {
+    const code = FLAG_CODES[team];
+    const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${team}">` : '';
+    const pc = posColor[p.pos] || '#888';
+    const pl = posLabel[p.pos] || p.pos;
+    html += `<div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;">
+      <span style="background:${pc};color:#000;font-size:.65rem;font-weight:800;padding:.2rem .45rem;border-radius:5px;min-width:32px;text-align:center;">${pl}</span>
+      <span style="flex:1;font-weight:600;">${p.name}</span>
+      <div style="display:flex;align-items:center;gap:.4rem;">${flag}<span style="font-size:.8rem;color:var(--text2);">${team}</span></div>
+      <span style="font-size:.75rem;color:var(--text3);">${p.club||''}</span>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+// =====================================================================
+// KO-BAUM
+// =====================================================================
+const BRACKET_ROUNDS = [
+  {id:'R32', label:'Rd. d. letzten 32', nums: [73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
+  {id:'R16', label:'Achtelfinale',      nums: [89,90,91,92,93,94,95,96]},
+  {id:'QF',  label:'Viertelfinale',     nums: [97,98,99,100]},
+  {id:'SF',  label:'Halbfinale',        nums: [101,102]},
+  {id:'F',   label:'Finale',            nums: [104]},
+];
+
+function bracketTeamName(name) {
+  if (!name) return '<span style="color:var(--text3);font-size:.72rem;">TBD</span>';
+  const code = FLAG_CODES[name];
+  const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${name}" style="vertical-align:middle;margin-right:4px;">` : '';
+  return flag + '<span style="font-size:.82rem;font-weight:600;">' + name + '</span>';
+}
+
+function buildBracket() {
+  const wrap = document.getElementById('bracket-wrap');
+  if (!wrap) return;
+  const matchMap = {};
+  MATCHES.forEach(m => matchMap[m.n] = m);
+  let html = '<div class="bracket-outer">';
+  BRACKET_ROUNDS.forEach(round => {
+    html += `<div class="bracket-round">`;
+    html += `<div class="bracket-round-label">${round.label}</div>`;
+    round.nums.forEach(n => {
+      const m = matchMap[n];
+      if (!m) return;
+      const ls = liveScores[m.n];
+      const hasScore = ls && (ls.live || ls.done);
+      const isLive = ls && ls.live;
+      const gc = GROUP_COLORS[m.group] || '#888';
+      const hScore = hasScore ? ls.h : '';
+      const aScore = hasScore ? ls.a : '';
+      const hWin = hasScore && ls.done && parseInt(ls.h) > parseInt(ls.a);
+      const aWin = hasScore && ls.done && parseInt(ls.a) > parseInt(ls.h);
+      html += `<div class="bracket-match">`;
+      html += `<div class="bracket-team ${hWin?'bwin':''} ${isLive?'bliver':''}">`;
+      html += bracketTeamName(m.home);
+      if (hasScore) html += `<span class="bscore">${hScore}</span>`;
+      html += `</div>`;
+      html += `<div class="bracket-team ${aWin?'bwin':''} ${isLive?'bliver':''}">`;
+      html += bracketTeamName(m.away);
+      if (hasScore) html += `<span class="bscore">${aScore}</span>`;
+      html += `</div>`;
+      html += `<div class="bracket-meta">📅 ${m.date ? formatDate(m.date) : '–'} · ${m.city}</div>`;
+      if (isLive) html += `<div style="font-size:.65rem;color:var(--green);font-weight:700;">🔴 LIVE ${ls.clock||''}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
 }
 
 // B – Wischgesten (einmalig registriert)
 (function(){
-  const TABS = ['overview','groups','schedule','venues','stats'];
+  const TABS = ['overview','groups','schedule','bracket','venues','stats','search'];
   let tx = 0, ty = 0, blocking = false, swiping = false;
   document.addEventListener('touchstart', e => {
     tx = e.touches[0].clientX;
@@ -2491,6 +2736,12 @@ function setFilter(btn) {
   btn.classList.add('active');
   activeFilter = btn.dataset.filter;
   filterMatches();
+  // Gruppen-Aufklapper schließen wenn nicht Gruppen-Filter
+  if (!activeFilter.startsWith('group-') && activeFilter !== 'all') {
+    const row = document.getElementById('grp-filter-row');
+    const gbtn = document.getElementById('grp-toggle-btn');
+    if (row) { row.style.display='none'; if(gbtn) gbtn.textContent='Gruppen ▾'; }
+  }
 }
 
 function filterMatches() {
@@ -2763,7 +3014,10 @@ function renderMatches() {
   const wrap = document.getElementById('matches-wrap');
   let filtered = MATCHES.filter(m => {
     if (activeFilter !== 'all') {
-      if (activeFilter.startsWith('group-')) {
+      if (activeFilter === 'fav') {
+        if (!favTeam) return false;
+        if (m.home !== favTeam && m.away !== favTeam) return false;
+      } else if (activeFilter.startsWith('group-')) {
         if (m.group !== activeFilter.replace('group-','')) return false;
       } else if (activeFilter.startsWith('phase-')) {
         const ph = activeFilter.replace('phase-','');
@@ -2809,7 +3063,8 @@ function renderMatches() {
         scoreHtml = `<span class="mscore upcoming">– : –</span>`;
       }
       const finalStyle = m.phase === 'Finale' ? 'background:linear-gradient(135deg,#1e2a10,#162038);' : '';
-      html += `<div class="match-card" data-group="${m.group}" style="${finalStyle}">
+      const isFavMatch = favTeam && (m.home === favTeam || m.away === favTeam);
+      html += `<div class="match-card${isFavMatch?' fav-highlight':''}" data-group="${m.group}" style="${finalStyle}">
         <div class="mteam">
           <span class="mflag">${m.hf}</span>
           <span class="mname">${m.home}</span>
@@ -2862,8 +3117,11 @@ function buildVenues() {
 buildOverview();
 buildGroups();
 buildVenues();
+buildBracket();
+initFavorite();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
+updateNextMatchWidget();
 
 let lastFocusBeforeModal = null;
 
@@ -2949,6 +3207,10 @@ function openSquadModal(teamName, evt) {
   document.getElementById('squad-overlay').style.display = 'flex';
   const closeBtn = document.getElementById('squad-close-btn');
   if (closeBtn) closeBtn.focus();
+  // Favoriten-Button aktualisieren
+  const titleEl = document.getElementById('squad-title');
+  if (titleEl) titleEl.dataset.team = teamName;
+  renderSquadFavBtn(teamName);
 }
 
 function openGroupModal(letter){
