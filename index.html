@@ -177,7 +177,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .p12{background:#2ec4b6;color:#000;}
 .p3{background:var(--gold);color:#000;}
 .p4{background:var(--text3);color:#fff;}
-.tflag{font-size:1.15rem;justify-self:center;width:1.35rem;text-align:center;}
+.tflag{justify-self:center;width:1.35rem;text-align:center;line-height:0;}
+.tflag-img{width:22px;height:16px;object-fit:cover;border-radius:2px;display:block;margin:0 auto;}
 .tname{display:block;font-weight:500;font-size:.82rem;min-width:0;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tname-marquee{position:relative;overflow:hidden;}
 .tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
@@ -2400,6 +2401,27 @@ function teamNameMarkup(name, team) {
   }
   return inner;
 }
+
+const FLAG_CODES = {
+  'Mexiko':'mx','S\u00fcdafrika':'za','S\u00fcdkorea':'kr','Tschechien':'cz',
+  'Kanada':'ca','Bosnien-Herzegowina':'ba','Katar':'qa','Schweiz':'ch',
+  'Brasilien':'br','Marokko':'ma','Haiti':'ht','Schottland':'gb-sct',
+  'USA':'us','Paraguay':'py','Australien':'au','T\u00fcrkei':'tr',
+  'Deutschland':'de','Cura\u00e7ao':'cw','Elfenbeink\u00fcste':'ci','Ecuador':'ec',
+  'Niederlande':'nl','Japan':'jp','Schweden':'se','Tunesien':'tn',
+  'Belgien':'be','\u00c4gypten':'eg','Iran':'ir','Neuseeland':'nz',
+  'Spanien':'es','Kap Verde':'cv','Saudi-Arabien':'sa','Uruguay':'uy',
+  'Frankreich':'fr','Senegal':'sn','Irak':'iq','Norwegen':'no',
+  'Argentinien':'ar','Algerien':'dz','\u00d6sterreich':'at','Jordanien':'jo',
+  'Portugal':'pt','DR Kongo':'cd','Usbekistan':'uz','Kolumbien':'co',
+  'England':'gb-eng','Kroatien':'hr','Ghana':'gh','Panama':'pa'
+};
+
+function flagImg(emoji, name) {
+  const code = FLAG_CODES[name];
+  if (!code) return `<span class="tflag">${emoji}</span>`;
+  return `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${name}" title="${name}" loading="lazy">`;
+}
 // =====================================================================
 // GROUPS
 // =====================================================================
@@ -2411,7 +2433,7 @@ function buildGroups() {
       return `<tr>
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
-          <span class="tflag">${t.flag}</span>
+          ${flagImg(t.flag, t.name)}
           ${teamNameMarkup(t.name, t)}
         </div></td>
         <td>0</td><td>0</td><td>0</td><td>0</td>
@@ -2932,7 +2954,7 @@ function openGroupModal(letter){
     });
     const pts=s*3+u, td=tf-tg;
     return `<tr>
-      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name, t)}</div></td>
+      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div>${flagImg(t.flag, t.name)}${teamNameMarkup(t.name, t)}</div></td>
       <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
       <td>${tf}</td><td>${tg}</td>
       <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
