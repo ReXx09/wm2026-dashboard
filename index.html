@@ -846,9 +846,13 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 
   <!-- ====== SPIELERSUCHE TAB ====== -->
   <div class="tab" id="tab-search">
-    <div class="sec-title">🔍 Spielersuche · alle 48 Kader</div>
-    <div style="max-width:520px;margin-bottom:1rem;">
-      <input type="text" class="sched-search" id="player-search-input" placeholder="Spielername eingeben…" oninput="searchPlayers()" autocomplete="off">
+    <div class="sec-title">🔍 Suche · Spieler &amp; Teams</div>
+    <div style="max-width:520px;margin-bottom:.75rem;">
+      <input type="text" class="sched-search" id="player-search-input" placeholder="Spieler- oder Teamname…" oninput="searchPlayers()" autocomplete="off">
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+      <button class="stab active" id="search-tab-players" onclick="switchSearchTab('players',this)">&#x26BD; Spieler</button>
+      <button class="stab" id="search-tab-teams" onclick="switchSearchTab('teams',this)">🏁 Teams</button>
     </div>
     <div id="player-search-results"><div style="color:var(--text3);font-size:.9rem;">Mindestens 2 Zeichen eingeben…</div></div>
   </div>
@@ -2482,6 +2486,15 @@ function updateNextMatchWidget() {
 // =====================================================================
 // SPIELERSUCHE
 // =====================================================================
+let searchTabMode = 'players';
+
+function switchSearchTab(mode, btn) {
+  searchTabMode = mode;
+  document.querySelectorAll('#search-tab-players,#search-tab-teams').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  searchPlayers();
+}
+
 function searchPlayers() {
   const q = document.getElementById('player-search-input').value.trim().toLowerCase();
   const wrap = document.getElementById('player-search-results');
@@ -2489,19 +2502,50 @@ function searchPlayers() {
     wrap.innerHTML = '<div style="color:var(--text3);font-size:.9rem;">Mindestens 2 Zeichen eingeben…</div>';
     return;
   }
+
+  if (searchTabMode === 'teams') {
+    // ---- TEAM-SUCHE ----
+    const teamResults = Object.keys(SQUADS).filter(name => name.toLowerCase().includes(q));
+    if (!teamResults.length) {
+      wrap.innerHTML = '<div style="color:var(--text3);font-size:.9rem;">Kein Team gefunden.</div>';
+      return;
+    }
+    let html = `<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;">${teamResults.length} Team${teamResults.length!==1?'s':''}</div>`;
+    teamResults.forEach(name => {
+      const code = FLAG_CODES[name];
+      const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${name}" style="width:28px;height:20px;">` : '';
+      const isFav = favTeam === name;
+      // Gruppe finden
+      let groupLetter = '', groupColor = '#888';
+      for (const [letter, g] of Object.entries(GROUPS)) {
+        if (g.teams.find(t => t.name === name)) { groupLetter = letter; groupColor = g.color; break; }
+      }
+      const safeN = name.replace(/'/g, "\\'");
+      html += `<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--bg3);border:1px solid ${isFav?'rgba(240,180,41,.5)':' var(--border)'};border-radius:12px;margin-bottom:.6rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
+          ${flag}
+          <span style="font-weight:700;font-size:.95rem;">${name}</span>
+          ${groupLetter ? `<span style="background:${groupColor};color:#000;font-size:.62rem;font-weight:800;padding:.15rem .45rem;border-radius:5px;margin-left:.25rem;">Gr. ${groupLetter}</span>` : ''}
+        </div>
+        <button onclick="openSquadModal('${safeN}',event)" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">📋 Kader</button>
+        <button onclick="setFavorite('${safeN}');searchPlayers();" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
+      </div>`;
+    });
+    wrap.innerHTML = html;
+    return;
+  }
+
+  // ---- SPIELER-SUCHE ----
   const results = [];
   Object.entries(SQUADS).forEach(([team, players]) => {
     players.forEach(p => {
-      if (p.name.toLowerCase().includes(q)) {
-        results.push({team, player: p});
-      }
+      if (p.name.toLowerCase().includes(q)) results.push({team, player: p});
     });
   });
   if (!results.length) {
     wrap.innerHTML = '<div style="color:var(--text3);font-size:.9rem;">Kein Spieler gefunden.</div>';
     return;
   }
-  const posOrder = {GK:0, DEF:1, MID:2, FWD:3};
   const posLabel = {GK:'TW', DEF:'ABW', MID:'MF', FWD:'ST'};
   const posColor = {GK:'#4361ee', DEF:'#2ec4b6', MID:'#f0b429', FWD:'#e63946'};
   let html = `<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;">${results.length} Ergebnis${results.length!==1?'se':''}</div>`;
@@ -2510,10 +2554,11 @@ function searchPlayers() {
     const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${team}">` : '';
     const pc = posColor[p.pos] || '#888';
     const pl = posLabel[p.pos] || p.pos;
+    const safeN = team.replace(/'/g, "\\'");
     html += `<div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;">
       <span style="background:${pc};color:#000;font-size:.65rem;font-weight:800;padding:.2rem .45rem;border-radius:5px;min-width:32px;text-align:center;">${pl}</span>
       <span style="flex:1;font-weight:600;">${p.name}</span>
-      <div style="display:flex;align-items:center;gap:.4rem;">${flag}<span style="font-size:.8rem;color:var(--text2);">${team}</span></div>
+      <div style="display:flex;align-items:center;gap:.4rem;cursor:pointer;" onclick="openSquadModal('${safeN}',event)" title="Kader anzeigen">${flag}<span style="font-size:.8rem;color:var(--text2);">${team}</span></div>
       <span style="font-size:.75rem;color:var(--text3);">${p.club||''}</span>
     </div>`;
   });
