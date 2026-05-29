@@ -2390,7 +2390,8 @@ function buildOverview() {
   });
 }
 
-function teamNameMarkup(name, team) {
+// linkMode=true → <a> (in Modals, kein Nesting-Problem); linkMode=false → <span data-team> (in Gruppen-Kacheln)
+function teamNameMarkup(name, team, linkMode) {
   const hasSquad = SQUADS && SQUADS[name];
   const colorClass = (team && team.host) ? ' tname-host' : ((team && team.debut) ? ' tname-debut' : '');
   const safeN = name.replace(/'/g, "\\'");
@@ -2398,13 +2399,14 @@ function teamNameMarkup(name, team) {
     ? `<span class="tname tname-marquee${colorClass}" title="${name}"><span class="tname-inner">${name}</span></span>`
     : `<span class="tname${colorClass}" title="${name}">${name}</span>`;
   if (hasSquad) {
+    if (linkMode === false) {
+      // Kein <a> in <a> – span mit data-team, Click-Delegation übernimmt
+      return `<span class="team-name-link" data-team="${name}" title="Kader anzeigen" style="cursor:pointer;">${inner}</span>`;
+    }
     return `<a href="#" class="team-name-link" onclick="openSquadModal('${safeN}',event);event.stopPropagation();return false;">${inner}</a>`;
   }
   return inner;
 }
-
-// Verhindere dass Tabellen-Klicks auf Zellen (kein Link) den group-modal öffnen
-// aber Team-Link-Klicks öffnen Squad-Modal und stoppen Propagation → group-link onclick feuert nicht
 
 const FLAG_CODES = {
   'Mexiko':'mx','S\u00fcdafrika':'za','S\u00fcdkorea':'kr','Tschechien':'cz',
@@ -2429,6 +2431,23 @@ function flagImg(emoji, name) {
 // =====================================================================
 // GROUPS
 // =====================================================================
+// Click-Delegation für Gruppen-Kacheln:
+// <a class="group-link"> ist der äußere Container (D-Pad-fokussierbar).
+// Team-Namen sind <span data-team="..."> (kein nested <a>).
+// Klick auf Span → Squad-Modal; Klick sonst → Gruppen-Modal.
+function handleGroupCardClick(e, letter) {
+  const span = e.target.closest('[data-team]');
+  if (span) {
+    e.preventDefault();
+    e.stopPropagation();
+    openSquadModal(span.dataset.team, e);
+    return false;
+  }
+  e.preventDefault();
+  openGroupModal(letter);
+  return false;
+}
+
 function buildGroups() {
   const grid = document.getElementById('groups-grid');
   Object.entries(GROUPS).forEach(([letter,g]) => {
@@ -2438,15 +2457,14 @@ function buildGroups() {
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
           ${flagImg(t.flag, t.name)}
-          ${teamNameMarkup(t.name, t)}
+          ${teamNameMarkup(t.name, t, false)}
         </div></td>
         <td>0</td><td>0</td><td>0</td><td>0</td>
         <td class="pts-cell">0</td>
       </tr>`;
     }).join('');
-    grid.innerHTML += `<div class="group-link" tabindex="0" role="button" aria-label="Gruppe ${letter} öffnen"
-      onclick="openGroupModal('${letter}')"
-      onkeydown="if(event.key==='Enter'||event.key===' '){openGroupModal('${letter}');event.preventDefault();return false;}">
+    grid.innerHTML += `<a href="#" class="group-link" aria-label="Gruppe ${letter} öffnen"
+      onclick="handleGroupCardClick(event,'${letter}')">
     <div class="group-card">
       <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter} <span style="margin-left:auto;font-size:.7rem;opacity:.75">▶ Details</span></div>
       <table class="gtable">
@@ -2456,7 +2474,7 @@ function buildGroups() {
         </tr></thead>
         <tbody>${teamsHTML}</tbody>
       </table>
-    </div></div>`;
+    </div></a>`;
   });
 }
 
