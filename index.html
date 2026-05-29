@@ -84,8 +84,13 @@ nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 .nb .icon{font-size:1rem;}
 
 /* TV/Remote focus visibility */
+button:focus,
 button:focus-visible,
+a:focus,
+a:focus-visible,
+[role="button"]:focus,
 [role="button"]:focus-visible,
+input:focus,
 input:focus-visible {
   outline:none;
   border-color:var(--gold) !important;
@@ -148,8 +153,9 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 /* ========= GROUPS ========= */
 .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:1.25rem;}
 .group-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.group-card[role="button"]{cursor:pointer;outline:none;touch-action:manipulation;}
-.group-card[role="button"]:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);}
+.group-link{display:block;text-decoration:none;color:inherit;outline:none;}
+.group-link:focus .group-card,
+.group-link:focus-visible .group-card{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);}
 .group-head{padding:.7rem 1rem;font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.5rem;color:#000;}
 .gtable{width:100%;border-collapse:collapse;}
 .gtable th{
@@ -1176,7 +1182,8 @@ function buildGroups() {
         <td class="pts-cell">0</td>
       </tr>`;
     }).join('');
-    grid.innerHTML += `<div class="group-card" role="button" tabindex="0" aria-label="Gruppe ${letter} öffnen" onclick="openGroupModal('${letter}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGroupModal('${letter}')}">
+    grid.innerHTML += `<a href="#" class="group-link" aria-label="Gruppe ${letter} öffnen" onclick="openGroupModal('${letter}');return false;">
+    <div class="group-card">
       <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter} <span style="margin-left:auto;font-size:.7rem;opacity:.75">▶ Details</span></div>
       <table class="gtable">
         <thead><tr>
@@ -1186,7 +1193,7 @@ function buildGroups() {
         </tr></thead>
         <tbody>${teamsHTML}</tbody>
       </table>
-    </div>`;
+    </div></a>`;
   });
 }
 
@@ -1574,9 +1581,19 @@ buildGroups();
 buildVenues();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
-initRemoteSupport();
 
 let lastFocusBeforeModal = null;
+
+// Back/ESC schliesst Modal auch auf TV-Browsern
+document.addEventListener('keydown', evt => {
+  if (evt.key === 'Escape' || evt.key === 'Backspace') {
+    const overlay = document.getElementById('gmodal-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+      evt.preventDefault();
+      closeGroupModal('force');
+    }
+  }
+});
 
 function closeGroupModal(e){
   const overlay = document.getElementById('gmodal-overlay');
@@ -1587,34 +1604,6 @@ function closeGroupModal(e){
       lastFocusBeforeModal.focus();
     }
   }
-}
-
-function initRemoteSupport(){
-  // Make non-native clickable elements selectable via remote (Enter/OK)
-  document.querySelectorAll('[onclick]').forEach(el => {
-    const nativeInteractive = el.matches('button,a,input,select,textarea');
-    if (!nativeInteractive && !el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
-    if (!nativeInteractive && !el.hasAttribute('role')) el.setAttribute('role','button');
-    if (el.dataset.remoteBound === '1' || el.hasAttribute('onkeydown')) return;
-    el.addEventListener('keydown', evt => {
-      if (evt.key === 'Enter' || evt.key === ' ' || evt.key === 'NumpadEnter') {
-        evt.preventDefault();
-        el.click();
-      }
-    });
-    el.dataset.remoteBound = '1';
-  });
-
-  // Back/ESC closes modal in TV browsers
-  document.addEventListener('keydown', evt => {
-    if (evt.key === 'Escape' || evt.key === 'Backspace') {
-      const overlay = document.getElementById('gmodal-overlay');
-      if (overlay && overlay.style.display !== 'none') {
-        evt.preventDefault();
-        closeGroupModal('force');
-      }
-    }
-  });
 }
 
 function openGroupModal(letter){
