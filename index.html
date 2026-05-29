@@ -169,7 +169,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gtable td{padding:.45rem .75rem;font-size:.82rem;border-top:1px solid var(--border);text-align:center;vertical-align:middle;}
 .gtable td:nth-child(1){text-align:left;}
 .gtable tr:hover td{background:var(--bg4);}
-.team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(7.8rem,1fr) auto auto;align-items:center;gap:.45rem;min-width:0;}
+.team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(0,1fr) 5.2rem;align-items:center;gap:.45rem;min-width:0;}
 .tpos{
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:.62rem;font-weight:800;flex-shrink:0;
@@ -177,11 +177,12 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .p12{background:#2ec4b6;color:#000;}
 .p3{background:var(--gold);color:#000;}
 .p4{background:var(--text3);color:#fff;}
-.tflag{font-size:1.15rem;justify-self:center;}
+.tflag{font-size:1.15rem;justify-self:center;width:1.35rem;text-align:center;}
 .tname{display:block;font-weight:500;font-size:.82rem;min-width:0;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tname-marquee{position:relative;overflow:hidden;}
 .tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
 @keyframes tnameMarquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
+.team-tags{display:flex;align-items:center;justify-content:flex-end;gap:.25rem;min-width:5.2rem;justify-self:end;}
 .host-tag{background:var(--gold);color:#000;font-size:.5rem;font-weight:900;padding:.1em .35em;border-radius:3px;text-transform:uppercase;}
 .pts-cell{font-weight:800;color:var(--text);}
 .gd-pos{color:var(--green);}
@@ -1173,6 +1174,13 @@ function teamNameMarkup(name) {
   return `<span class="tname" title="${name}">${name}</span>`;
 }
 
+function teamTagsMarkup(team) {
+  const tags = [];
+  if (team.host) tags.push('<span class="host-tag">Gastgeber</span>');
+  if (team.debut) tags.push('<span class="debut-tag">Debüt</span>');
+  return `<span class="team-tags">${tags.join('')}</span>`;
+}
+
 // =====================================================================
 // GROUPS
 // =====================================================================
@@ -1181,14 +1189,12 @@ function buildGroups() {
   Object.entries(GROUPS).forEach(([letter,g]) => {
     const teamsHTML = g.teams.map((t,i) => {
       const posClass = i < 2 ? 'p12' : i === 2 ? 'p3' : 'p4';
-      const hostTag = t.host ? `<span class="host-tag">Gastgeber</span>` : '';
-      const debutTag = t.debut ? `<span class="debut-tag">Debüt</span>` : '';
       return `<tr>
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
           <span class="tflag">${t.flag}</span>
           ${teamNameMarkup(t.name)}
-          ${hostTag}${debutTag}
+          ${teamTagsMarkup(t)}
         </div></td>
         <td>0</td><td>0</td><td>0</td><td>0</td>
         <td>0</td><td>0</td><td class="gd-pos">0</td>
@@ -1648,7 +1654,7 @@ function openGroupModal(letter){
     });
     const pts=s*3+u, td=tf-tg;
     return `<tr>
-      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name)}${t.host?'<span class="host-tag">Gastgeber</span>':''}</div></td>
+      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name)}${teamTagsMarkup(t)}</div></td>
       <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
       <td>${tf}</td><td>${tg}</td>
       <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
