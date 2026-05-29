@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -169,7 +169,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gtable td{padding:.45rem .75rem;font-size:.82rem;border-top:1px solid var(--border);text-align:center;vertical-align:middle;}
 .gtable td:nth-child(1){text-align:left;}
 .gtable tr:hover td{background:var(--bg4);}
-.team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(0,1fr) 5.2rem;align-items:center;gap:.45rem;min-width:0;}
+.team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(0,1fr);align-items:center;gap:.45rem;min-width:0;}
 .tpos{
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:.62rem;font-weight:800;flex-shrink:0;
@@ -182,8 +182,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .tname-marquee{position:relative;overflow:hidden;}
 .tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
 @keyframes tnameMarquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
-.team-tags{display:flex;align-items:center;justify-content:flex-end;gap:.25rem;min-width:5.2rem;justify-self:end;}
-.host-tag{background:var(--gold);color:#000;font-size:.5rem;font-weight:900;padding:.1em .35em;border-radius:3px;text-transform:uppercase;}
+.tname-host{color:var(--gold);font-weight:700;}
+.tname-debut{color:#2ec4b6;font-weight:700;}
 .pts-cell{font-weight:800;color:var(--text);}
 .gd-pos{color:var(--green);}
 .gd-neg{color:var(--red);}
@@ -2388,24 +2388,18 @@ function buildOverview() {
   });
 }
 
-function teamNameMarkup(name) {
+function teamNameMarkup(name, team) {
   const hasSquad = SQUADS && SQUADS[name];
+  const colorClass = (team && team.host) ? ' tname-host' : ((team && team.debut) ? ' tname-debut' : '');
+  const safeN = name.replace(/'/g, "\\'");
   const inner = name.length > 12
-    ? `<span class="tname tname-marquee" title="${name}"><span class="tname-inner">${name}</span></span>`
-    : `<span class="tname" title="${name}">${name}</span>`;
+    ? `<span class="tname tname-marquee${colorClass}" title="${name}"><span class="tname-inner">${name}</span></span>`
+    : `<span class="tname${colorClass}" title="${name}">${name}</span>`;
   if (hasSquad) {
-    return `<a href="#" class="team-name-link" onclick="openSquadModal('${name.replace(/'/g,"\\'")}',event)">${inner}</a>`;
+    return `<a href="#" class="team-name-link" onclick="openSquadModal('${safeN}',event)">${inner}</a>`;
   }
   return inner;
 }
-
-function teamTagsMarkup(team) {
-  const tags = [];
-  if (team.host) tags.push('<span class="host-tag">Gastgeber</span>');
-  if (team.debut) tags.push('<span class="debut-tag">Debüt</span>');
-  return `<span class="team-tags">${tags.join('')}</span>`;
-}
-
 // =====================================================================
 // GROUPS
 // =====================================================================
@@ -2418,8 +2412,7 @@ function buildGroups() {
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
           <span class="tflag">${t.flag}</span>
-          ${teamNameMarkup(t.name)}
-          ${teamTagsMarkup(t)}
+          ${teamNameMarkup(t.name, t)}
         </div></td>
         <td>0</td><td>0</td><td>0</td><td>0</td>
         <td>0</td><td>0</td><td class="gd-pos">0</td>
@@ -2941,7 +2934,7 @@ function openGroupModal(letter){
     });
     const pts=s*3+u, td=tf-tg;
     return `<tr>
-      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name)}${teamTagsMarkup(t)}</div></td>
+      <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div><span class="tflag">${t.flag}</span>${teamNameMarkup(t.name, t)}</div></td>
       <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
       <td>${tf}</td><td>${tg}</td>
       <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
