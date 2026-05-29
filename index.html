@@ -139,6 +139,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 /* ========= GROUPS ========= */
 .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:1.25rem;}
 .group-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.group-card[role="button"]{cursor:pointer;outline:none;touch-action:manipulation;}
+.group-card[role="button"]:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);}
 .group-head{padding:.7rem 1rem;font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.5rem;color:#000;}
 .gtable{width:100%;border-collapse:collapse;}
 .gtable th{
@@ -1165,7 +1167,7 @@ function buildGroups() {
         <td class="pts-cell">0</td>
       </tr>`;
     }).join('');
-    grid.innerHTML += `<div class="group-card" style="cursor:pointer" onclick="openGroupModal('${letter}')">
+    grid.innerHTML += `<div class="group-card" role="button" tabindex="0" aria-label="Gruppe ${letter} öffnen" onclick="openGroupModal('${letter}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGroupModal('${letter}')}">
       <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter} <span style="margin-left:auto;font-size:.7rem;opacity:.75">▶ Details</span></div>
       <table class="gtable">
         <thead><tr>
