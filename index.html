@@ -169,7 +169,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gtable td{padding:.45rem .75rem;font-size:.82rem;border-top:1px solid var(--border);text-align:center;vertical-align:middle;}
 .gtable td:nth-child(1){text-align:left;}
 .gtable tr:hover td{background:var(--bg4);}
-.team-cell{display:flex;align-items:center;gap:.5rem;min-width:0;}
+.team-cell{display:grid;grid-template-columns:18px 1.35rem minmax(7.8rem,1fr) auto auto;align-items:center;gap:.45rem;min-width:0;}
 .tpos{
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:.62rem;font-weight:800;flex-shrink:0;
@@ -177,8 +177,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .p12{background:#2ec4b6;color:#000;}
 .p3{background:var(--gold);color:#000;}
 .p4{background:var(--text3);color:#fff;}
-.tflag{font-size:1.15rem;}
-.tname{font-weight:500;font-size:.82rem;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tflag{font-size:1.15rem;justify-self:center;}
+.tname{display:block;font-weight:500;font-size:.82rem;min-width:0;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tname-marquee{position:relative;overflow:hidden;}
 .tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
 @keyframes tnameMarquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
