@@ -3032,6 +3032,49 @@ function flagImg(emoji, name) {
   if (!code) return `<span class="tflag">${emoji}</span>`;
   return `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${name}" title="${name}" loading="lazy">`;
 }
+
+// Emoji-Flaggen in statischen Hist.-Sektionen durch CDN-Bilder ersetzen
+// (Fire TV / Android rendern regionale Indikator-Emoji oft nur als Buchstaben)
+const FLAG_EMOJI_MAP = {
+  '🇩🇪':'de','🇫🇷':'fr','🇧🇷':'br','🇦🇷':'ar','🇮🇹':'it',
+  '🇪🇸':'es','🇵🇹':'pt','🇳🇱':'nl','🇧🇪':'be','🇺🇾':'uy',
+  '🇭🇷':'hr','🇨🇿':'cz','🇬🇷':'gr','🇩🇰':'dk','🇸🇪':'se',
+  '🇨🇭':'ch','🇦🇹':'at','🇷🇺':'ru','🇵🇱':'pl','🇭🇺':'hu',
+  '🇹🇷':'tr','🇨🇴':'co','🇷🇸':'rs','🇺🇸':'us','🇲🇽':'mx',
+  '🇯🇵':'jp','🇰🇷':'kr','🇨🇱':'cl','🇦🇺':'au','🇿🇦':'za',
+  '🇸🇳':'sn','🇨🇲':'cm','🇮🇷':'ir','🇸🇦':'sa','🇲🇦':'ma',
+  '🇹🇳':'tn','🇳🇬':'ng','🇸🇮':'si','🇳🇴':'no','🇶🇦':'qa',
+  '🇷🇴':'ro','🇸🇰':'sk','🇵🇾':'py','🇪🇨':'ec','🇺🇦':'ua',
+  '🇩🇿':'dz','🇨🇩':'cd','🇺🇿':'uz','🇮🇶':'iq','🇯🇴':'jo',
+  '🇨🇻':'cv','🇨🇼':'cw','🇭🇹':'ht','🇵🇦':'pa','🇬🇭':'gh',
+  '🇨🇮':'ci','🇳🇿':'nz','🇸🇦':'sa',
+};
+const FLAG_EMOJI_SPECIAL = [
+  ['🏴󠁧󠁢󠁥󠁮󠁧󠁿','gb-eng'],
+  ['🏴󠁧󠁢󠁳󠁣󠁴󠁿','gb-sct'],
+];
+function patchEmojiFlags() {
+  const ids = [
+    'stat-wmsieger','stat-emsieger','stat-titelranking',
+    'stat-wmscorers','stat-emranking','stat-emscorers',
+    'stat-wmalltime','stat-emalltime','stat-emhosts',
+  ];
+  const imgTag = code =>
+    `<img src="https://flagcdn.com/24x18/${code}.png" ` +
+    `style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px;" loading="lazy">`;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let h = el.innerHTML;
+    FLAG_EMOJI_SPECIAL.forEach(([emoji, code]) => {
+      h = h.split(emoji).join(imgTag(code));
+    });
+    Object.entries(FLAG_EMOJI_MAP).forEach(([emoji, code]) => {
+      h = h.split(emoji).join(imgTag(code));
+    });
+    el.innerHTML = h;
+  });
+}
 // =====================================================================
 // GROUPS
 // =====================================================================
@@ -3479,6 +3522,7 @@ buildVenues();
 buildBracket();
 buildClubStats();
 buildConfederations();
+patchEmojiFlags();
 initFavorite();
 initLiveData(); // startet renderMatches() + Auto-Refresh
 fetchStats();   // Statistiken laden
