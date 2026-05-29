@@ -739,6 +739,9 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <button class="stab active" id="stab-hist-emsieger" onclick="showStatSection('emsieger',this)">🇪🇺 EM-Sieger</button>
       <button class="stab" id="stab-hist-emranking" onclick="showStatSection('emranking',this)">🥇 EM-Rangliste</button>
       <button class="stab" id="stab-hist-emscorers" onclick="showStatSection('emscorers',this)">⚽ EM-Torschützen</button>
+      <button class="stab" id="stab-hist-emalltime" onclick="showStatSection('emalltime',this)">🏅 Alle Zeiten</button>
+      <button class="stab" id="stab-hist-emhosts" onclick="showStatSection('emhosts',this)">🏆 Gastgeber</button>
+      <button class="stab" id="stab-hist-emcuriosities" onclick="showStatSection('emcuriosities',this)">📋 Kuriositäten</button>
     </div>
     </div>
 
@@ -883,6 +886,69 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
         <div class="scorer-row"><span class="yr">1968</span><span>🇷🇸 Dragan Džajić</span><span class="scorer-goals">2</span></div>
         <div class="scorer-row"><span class="yr">1964</span><span>🇪🇸 Jesús Pereda <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
         <div class="scorer-row"><span class="yr">1960</span><span>🇷🇺 Valentin Ivanov <small style="color:var(--text3)">(geteilt)</small></span><span class="scorer-goals">2</span></div>
+      </div>
+    </div>
+
+    <!-- EM REKORDTORSCHÜTZEN ALLE ZEITEN -->
+    <div id="stat-emalltime" style="display:none">
+      <div class="stats-section" style="max-width:540px">
+        <div class="stats-head">🏅 EM-Rekordtorschützen · alle Turniere</div>
+        <div class="at-head"><span>#</span><span>Spieler · Land</span><span>Span</span><span style="text-align:right">Tore</span></div>
+        <div class="at-row"><span style="color:var(--gold);font-weight:800">1</span><span><strong>Cristiano Ronaldo</strong><br><small style="color:var(--text3)">🇵🇹 Portugal</small></span><span style="color:var(--text3);font-size:.72rem">2004–24</span><span class="at-goals">14</span></div>
+        <div class="at-row"><span style="color:var(--text2)">2</span><span><strong>Michel Platini</strong><br><small style="color:var(--text3)">🇫🇷 Frankreich</small></span><span style="color:var(--text3);font-size:.72rem">1984</span><span class="at-goals">9</span></div>
+        <div class="at-row"><span style="color:var(--text2)">3</span><span><strong>Alan Shearer</strong><br><small style="color:var(--text3)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</small></span><span style="color:var(--text3);font-size:.72rem">1992–00</span><span class="at-goals">7</span></div>
+        <div class="at-row"><span style="color:var(--text2)">3</span><span><strong>Antoine Griezmann</strong><br><small style="color:var(--text3)">🇫🇷 Frankreich</small></span><span style="color:var(--text3);font-size:.72rem">2012–24</span><span class="at-goals">7</span></div>
+        <div class="at-row"><span style="color:var(--text2)">5</span><span><strong>Thierry Henry</strong><br><small style="color:var(--text3)">🇫🇷 Frankreich</small></span><span style="color:var(--text3);font-size:.72rem">2000–08</span><span class="at-goals">6</span></div>
+        <div class="at-row"><span style="color:var(--text2)">5</span><span><strong>Nuno Gomes</strong><br><small style="color:var(--text3)">🇵🇹 Portugal</small></span><span style="color:var(--text3);font-size:.72rem">2000–08</span><span class="at-goals">6</span></div>
+        <div class="at-row"><span style="color:var(--text2)">5</span><span><strong>Wayne Rooney</strong><br><small style="color:var(--text3)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</small></span><span style="color:var(--text3);font-size:.72rem">2004–16</span><span class="at-goals">6</span></div>
+        <div class="at-row"><span style="color:var(--text2)">5</span><span><strong>Zlatan Ibrahimović</strong><br><small style="color:var(--text3)">🇸🇪 Schweden</small></span><span style="color:var(--text3);font-size:.72rem">2004–16</span><span class="at-goals">6</span></div>
+        <div class="at-row"><span style="color:var(--text2)">9</span><span><strong>Marco van Basten</strong><br><small style="color:var(--text3)">🇳🇱 Niederlande</small></span><span style="color:var(--text3);font-size:.72rem">1988</span><span class="at-goals">5</span></div>
+        <div class="at-row"><span style="color:var(--text2)">9</span><span><strong>Patrick Kluivert</strong><br><small style="color:var(--text3)">🇳🇱 Niederlande</small></span><span style="color:var(--text3);font-size:.72rem">2000</span><span class="at-goals">5</span></div>
+      </div>
+    </div>
+
+    <!-- EM GASTGEBER HISTORISCH -->
+    <div id="stat-emhosts" style="display:none">
+      <div class="stats-section" style="max-width:580px">
+        <div class="stats-head">🏆 UEFA EM-Gastgeber · alle Turniere</div>
+        <div class="host-head"><span>Jahr</span><span>Gastgeber</span><span>Europameister</span><span style="text-align:right">Teams</span></div>
+        <div class="host-row"><span class="yr">2028</span><span style="font-weight:600">UK &amp; Irland</span><span style="color:var(--text3);font-size:.75rem">– (kommend)</span><span style="text-align:right;color:var(--gold);font-weight:700">24</span></div>
+        <div class="host-row"><span class="yr">2024</span><span>Deutschland</span><span style="color:var(--text2)">🇪🇸 Spanien</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">2020</span><span>11 Länder (pan-europäisch)</span><span style="color:var(--text2)">🇮🇹 Italien</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">2016</span><span>Frankreich</span><span style="color:var(--text2)">🇵🇹 Portugal</span><span style="text-align:right;color:var(--text3)">24</span></div>
+        <div class="host-row"><span class="yr">2012</span><span>Polen &amp; Ukraine</span><span style="color:var(--text2)">🇪🇸 Spanien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">2008</span><span>Österreich &amp; Schweiz</span><span style="color:var(--text2)">🇪🇸 Spanien</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">2004</span><span>Portugal</span><span style="color:var(--text2)">🇬🇷 Griechenland</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">2000</span><span>Belgien &amp; Niederlande</span><span style="color:var(--text2)">🇫🇷 Frankreich</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1996</span><span>England</span><span style="color:var(--text2)">🇩🇪 Deutschland</span><span style="text-align:right;color:var(--text3)">16</span></div>
+        <div class="host-row"><span class="yr">1992</span><span>Schweden</span><span style="color:var(--text2)">🇩🇰 Dänemark</span><span style="text-align:right;color:var(--text3)">8</span></div>
+        <div class="host-row"><span class="yr">1988</span><span>Deutschland</span><span style="color:var(--text2)">🇳🇱 Niederlande</span><span style="text-align:right;color:var(--text3)">8</span></div>
+        <div class="host-row"><span class="yr">1984</span><span>Frankreich</span><span style="color:var(--text2)">🇫🇷 Frankreich</span><span style="text-align:right;color:var(--text3)">8</span></div>
+        <div class="host-row"><span class="yr">1980</span><span>Italien</span><span style="color:var(--text2)">🇩🇪 Deutschland</span><span style="text-align:right;color:var(--text3)">8</span></div>
+        <div class="host-row"><span class="yr">1976</span><span>Jugoslawien</span><span style="color:var(--text2)">🇨🇿 Tschechoslowakei</span><span style="text-align:right;color:var(--text3)">4</span></div>
+        <div class="host-row"><span class="yr">1972</span><span>Belgien</span><span style="color:var(--text2)">🇩🇪 Deutschland</span><span style="text-align:right;color:var(--text3)">4</span></div>
+        <div class="host-row"><span class="yr">1968</span><span>Italien</span><span style="color:var(--text2)">🇮🇹 Italien</span><span style="text-align:right;color:var(--text3)">4</span></div>
+        <div class="host-row"><span class="yr">1964</span><span>Spanien</span><span style="color:var(--text2)">🇪🇸 Spanien</span><span style="text-align:right;color:var(--text3)">4</span></div>
+        <div class="host-row"><span class="yr">1960</span><span>Frankreich</span><span style="color:var(--text2)">🇷🇺 UdSSR</span><span style="text-align:right;color:var(--text3)">4</span></div>
+      </div>
+    </div>
+
+    <!-- EM KURIOSITÄTEN -->
+    <div id="stat-emcuriosities" style="display:none">
+      <div class="stats-section" style="max-width:640px">
+        <div class="stats-head">📋 EM-Kuriositäten &amp; Rekorde</div>
+        <div style="padding:.75rem 1rem;">
+          <div class="curiosity-item"><div class="curiosity-title">⚡ Schnellstes EM-Tor</div><div class="curiosity-desc">Dmitri Kirichenko (Russland) &ndash; 67 Sekunden vs. Griechenland &middot; EM 2004</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">👴 Ältester EM-Spieler</div><div class="curiosity-desc">Gábor Király (Ungarn) &ndash; 40 Jahre &amp; 86 Tage &middot; EM 2016</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🇩🇰 Das Wunder von 1992</div><div class="curiosity-desc">Dänemark rückte als Ersatz für das ausgeschlossene Jugoslawien nach &ndash; und gewann trotzdem den Titel</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🇬🇷 Griechenland 2004</div><div class="curiosity-desc">Als 150:1-Außenseiter gewann Griechenland die EM &ndash; schlug Gastgeber Portugal sowohl in der Gruppe als auch im Finale</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🏟️ EM in 11 Ländern</div><div class="curiosity-desc">Euro 2020 (ausgetragen 2021) wurde wegen COVID-19 paneuropäisch in 11 Gastgeberländern gespielt</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">⚽ Platinis Rekord</div><div class="curiosity-desc">Michel Platini traf 1984 in 5 Spielen 9 Tore &ndash; Rekord für Tore in einem Einzelturnier, bis heute ungebrochen</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🏅 Cristiano Ronaldo &ndash; 6 EMs</div><div class="curiosity-desc">CR7 nahm von 2004 bis 2024 an 6 Europameisterschaften teil und erzielte insgesamt 14 Tore &ndash; beide Rekorde</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🏆 Nur 3 Gastgeber-Triumphe</div><div class="curiosity-desc">Nur Spanien (1964), Italien (1968) und Frankreich (1984) gewannen die EM als Gastgeberland</div></div>
+          <div class="curiosity-item"><div class="curiosity-title">🔄 Spaniens Tripel-Triumph</div><div class="curiosity-desc">Spanien gewann 2008, 2012 und 2024 &ndash; als einzige Nation dreimal Europameister</div></div>
+          <div class="curiosity-item" style="margin-bottom:0"><div class="curiosity-title">🦠 Die verschobene EM</div><div class="curiosity-desc">Euro 2020 fand erst 2021 statt &ndash; das erste Mal, dass ein großes Fußballturnier wegen einer Pandemie um ein Jahr verschoben wurde</div></div>
+        </div>
       </div>
     </div>
 
@@ -3188,7 +3254,7 @@ function showHistCat(which, btn) {
 }
 
 function showStatSection(id, btn) {
-  ['scorers','standings','cards','teamstats','assists','cleansheets','clubs','confederations','wmsieger','emsieger','titelranking','wmscorers','wmalltime','hosts','curiosities','emranking','emscorers'].forEach(s => {
+  ['scorers','standings','cards','teamstats','assists','cleansheets','clubs','confederations','wmsieger','emsieger','titelranking','wmscorers','wmalltime','hosts','curiosities','emranking','emscorers','emalltime','emhosts','emcuriosities'].forEach(s => {
     const el = document.getElementById('stat-'+s);
     if (el) el.style.display = s === id ? '' : 'none';
   });
