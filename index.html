@@ -1587,7 +1587,7 @@ function openGroupModal(letter){
       if(m.group!==letter) return;
       const ls = liveScores[m.num];
       if(!ls||(!ls.live&&!ls.done)) return;
-      const isH=m.h===t.name, isA=m.a===t.name;
+      const isH=m.home===t.name, isA=m.away===t.name;
       if(!isH&&!isA) return;
       const gh=parseInt(ls.h)||0, ga=parseInt(ls.a)||0;
       sp++;
@@ -1615,17 +1615,13 @@ function openGroupModal(letter){
       const score = hasScore ? `${ls.h} : ${ls.a}` : '–';
       const isLive = ls&&ls.live;
       const isDone = ls&&ls.done;
-      const dateStr = m.date ? m.date.split('T')[0] : '';
-      const timeStr = m.date && m.date.includes('T') ? m.date.split('T')[1].slice(0,5) : '';
-      const dateLabel = dateStr ? formatDate(dateStr)+(timeStr?' '+timeStr:'') : '';
-      const hFlag = g.teams.find(t=>t.name===m.h)?.flag||'';
-      const aFlag = g.teams.find(t=>t.name===m.a)?.flag||'';
+      const dateLabel = m.date ? formatDate(m.date)+(m.time?' '+m.time:'') : '';
       return `<div class="gm-match">
         <span class="gm-date">${dateLabel}</span>
         <div class="gm-teams">
-          <span>${hFlag} ${m.h}</span>
+          <span>${m.hf} ${m.home}</span>
           <span class="gm-score" style="${isLive?'color:var(--green)':isDone?'color:var(--text)':''}">${score}</span>
-          <span>${m.a} ${aFlag}</span>
+          <span>${m.away} ${m.af}</span>
         </div>
         ${isLive?'<span class="gm-live">🔴 LIVE</span>':isDone?'<span style="font-size:.65rem;color:var(--text3)">✓</span>':''}
       </div>`;
