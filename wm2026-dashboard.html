@@ -1052,7 +1052,6 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   <div class="tab" id="tab-search">
     <div class="sec-title">🔍 Suche · Spieler &amp; Teams</div>
     <div style="max-width:520px;margin-bottom:.75rem;">
-      <button id="search-activate-btn" onclick="document.getElementById('player-search-input').focus()" style="display:block;width:100%;padding:.55rem .9rem;margin-bottom:.4rem;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.85rem;text-align:left;cursor:pointer;">🔍 Hier klicken / Enter um Suche zu aktivieren</button>
       <input type="text" class="sched-search" id="player-search-input" placeholder="Spieler- oder Teamname…" oninput="searchPlayers()" autocomplete="off" tabindex="0">
     </div>
     <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
@@ -2570,6 +2569,10 @@ function switchSearchTab(mode, btn) {
   document.querySelectorAll('#search-tab-players,#search-tab-teams').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   searchPlayers(true);
+  setTimeout(() => {
+    const input = document.getElementById('player-search-input');
+    if (input) input.focus();
+  }, 0);
 }
 
 function searchPlayers(immediate) {
