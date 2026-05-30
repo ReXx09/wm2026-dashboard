@@ -212,7 +212,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gmodal{background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:640px;overflow:hidden;animation:modalIn .22s ease;}
 @keyframes modalIn{from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);}}
 .gmodal-head{padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:1rem;color:#000;}
-.gmodal-close{background:rgba(0,0,0,.25);border:none;color:#000;font-size:1.2rem;cursor:pointer;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:900;}
+.gmodal-close{background:rgba(0,0,0,.25);border:none;color:#000;font-size:1.3rem;cursor:pointer;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-weight:900;}
 .gmodal-body{padding:1rem;}
 .gmodal-matches{margin-top:1rem;}
 .gm-match{display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:9px;border:1px solid var(--border);margin-bottom:.45rem;background:var(--bg3);font-size:.8rem;gap:.5rem;}
@@ -398,6 +398,11 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   .venues-grid{grid-template-columns:1fr;}
   .ov-stats{grid-template-columns:repeat(2,1fr);}
   .winners-grid{grid-template-columns:1fr !important;}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
 }
 
 /* ========= HISTORY / RANKING ROWS ========= */
@@ -2404,11 +2409,17 @@ const CONF_DATA = [
 // =====================================================================
 // COUNTDOWN
 // =====================================================================
+let countdownTimer = null;
+
 function updateCountdown() {
   const target = new Date('2026-06-11T19:00:00-06:00').getTime();
   const now = new Date().getTime();
   const diff = target - now;
   if (diff <= 0) {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
     document.getElementById('countdown').innerHTML = '<div class="cd-label">Das Turnier läuft!</div><div class="cd-live">🔴 LIVE</div>';
     return;
   }
@@ -2422,7 +2433,7 @@ function updateCountdown() {
   document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
 }
 updateCountdown();
-setInterval(updateCountdown, 1000);
+countdownTimer = setInterval(updateCountdown, 1000);
 
 // =====================================================================
 // TABS
@@ -2451,7 +2462,12 @@ function toggleGroupFilters() {
 let favTeam = null;
 
 function initFavorite() {
-  favTeam = localStorage.getItem('wm26_fav') || null;
+  try {
+    favTeam = localStorage.getItem('wm26_fav') || null;
+  } catch (e) {
+    favTeam = null;
+    console.warn('wm26_fav konnte nicht gelesen werden:', e);
+  }
   renderFavBtn();
   const fb = document.getElementById('fav-filter-btn');
   if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
@@ -2470,10 +2486,18 @@ function renderFavBtn() {
 function setFavorite(name) {
   if (favTeam === name) {
     favTeam = null;
-    localStorage.removeItem('wm26_fav');
+    try {
+      localStorage.removeItem('wm26_fav');
+    } catch (e) {
+      console.warn('wm26_fav konnte nicht entfernt werden:', e);
+    }
   } else {
     favTeam = name;
-    localStorage.setItem('wm26_fav', name);
+    try {
+      localStorage.setItem('wm26_fav', name);
+    } catch (e) {
+      console.warn('wm26_fav konnte nicht gespeichert werden:', e);
+    }
   }
   renderFavBtn();
   const fb = document.getElementById('fav-filter-btn');
@@ -2537,15 +2561,21 @@ function updateNextMatchWidget() {
 // SPIELERSUCHE
 // =====================================================================
 let searchTabMode = 'players';
+let searchDebounceTimer = null;
 
 function switchSearchTab(mode, btn) {
   searchTabMode = mode;
   document.querySelectorAll('#search-tab-players,#search-tab-teams').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  searchPlayers();
+  searchPlayers(true);
 }
 
-function searchPlayers() {
+function searchPlayers(immediate) {
+  if (!immediate) {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => searchPlayers(true), 220);
+    return;
+  }
   const q = document.getElementById('player-search-input').value.trim().toLowerCase();
   const wrap = document.getElementById('player-search-results');
   if (q.length < 2) {
@@ -2578,7 +2608,7 @@ function searchPlayers() {
           ${groupLetter ? `<span style="background:${groupColor};color:#000;font-size:.62rem;font-weight:800;padding:.15rem .45rem;border-radius:5px;margin-left:.25rem;">Gr. ${groupLetter}</span>` : ''}
         </div>
         <button onclick="openSquadModal('${safeN}',event)" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">📋 Kader</button>
-        <button onclick="setFavorite('${safeN}');searchPlayers();" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
+        <button onclick="setFavorite('${safeN}');searchPlayers(true);" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
       </div>`;
     });
     wrap.innerHTML = html;
@@ -2792,8 +2822,11 @@ function buildCleanSheets() {
 // B – Wischgesten (einmalig registriert)
 (function(){
   const TABS = ['overview','groups','schedule','bracket','venues','stats','search'];
-  let tx = 0, ty = 0, blocking = false, swiping = false;
+  const SWIPE_IGNORE_SELECTOR = 'nav,.bracket-outer,.standings-wrap,input,textarea,select,[contenteditable="true"]';
+  let tx = 0, ty = 0, blocking = false, swiping = false, swipeEnabled = true;
   document.addEventListener('touchstart', e => {
+    swipeEnabled = !e.target.closest(SWIPE_IGNORE_SELECTOR);
+    if (!swipeEnabled) return;
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
     blocking = false;
@@ -2801,6 +2834,7 @@ function buildCleanSheets() {
   }, {passive:true});
   // Nicht-passive touchmove: verhindert horizontales Seiten-Scrollen bei horizontalem Swipe
   document.addEventListener('touchmove', e => {
+    if (!swipeEnabled) return;
     if (swiping) return;
     const dx = Math.abs(e.touches[0].clientX - tx);
     const dy = Math.abs(e.touches[0].clientY - ty);
@@ -2811,6 +2845,7 @@ function buildCleanSheets() {
     }
   }, {passive:false});
   document.addEventListener('touchend', e => {
+    if (!swipeEnabled) return;
     if (swiping) return;
     const dx = e.changedTouches[0].clientX - tx;
     const dy = e.changedTouches[0].clientY - ty;
