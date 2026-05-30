@@ -3451,10 +3451,35 @@ document.addEventListener('keydown', evt => {
 // FIRE TV D-PAD NAVIGATION
 // =====================================================================
 (function() {
+  function restoreSafeFocus() {
+    const focused = document.activeElement;
+    const hasUsableFocus = focused && focused !== document.body && focused !== document.documentElement;
+    if (hasUsableFocus) return;
+
+    const squadOverlay = document.getElementById('squad-overlay');
+    const groupOverlay = document.getElementById('gmodal-overlay');
+    const modalOpen = (squadOverlay && squadOverlay.style.display !== 'none') || (groupOverlay && groupOverlay.style.display !== 'none');
+    if (modalOpen) return;
+
+    const activeNav = document.querySelector('nav .nb.active');
+    if (activeNav) activeNav.focus();
+  }
+
   // Beim ersten Laden: Fokus auf aktiven Nav-Button setzen
   window.addEventListener('load', function() {
     const activeNav = document.querySelector('nav .nb.active');
     if (activeNav) activeNav.focus();
+  });
+
+  // Fully Kiosk/WebView: nach Resume/Foreground Fokus bei Bedarf auf aktive Nav zurückholen
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) setTimeout(restoreSafeFocus, 80);
+  });
+  window.addEventListener('pageshow', function() {
+    setTimeout(restoreSafeFocus, 80);
+  });
+  window.addEventListener('focus', function() {
+    setTimeout(restoreSafeFocus, 80);
   });
 
   document.addEventListener('keydown', function(e) {
