@@ -3468,6 +3468,23 @@ document.addEventListener('keydown', evt => {
     const navBtns = Array.from(document.querySelectorAll('nav .nb'));
     const inNav = navBtns.includes(focused);
 
+    const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat');
+    if (!inNav && isRowButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      const row = focused.parentElement;
+      const rowBtns = row ? Array.from(row.querySelectorAll('button.fbtn,button.stab,button.stab-main,button.stab-cat')) : [];
+      const idx = rowBtns.indexOf(focused);
+      if (idx !== -1) {
+        const nextIdx = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+        const nextBtn = rowBtns[nextIdx];
+        if (nextBtn) {
+          e.preventDefault();
+          nextBtn.focus();
+          nextBtn.click();
+          return;
+        }
+      }
+    }
+
     // Pfeil Hoch aus dem Inhalt heraus → zurück zur Nav
     if (e.key === 'ArrowUp' && !inNav) {
       const activeNav = document.querySelector('nav .nb.active');
