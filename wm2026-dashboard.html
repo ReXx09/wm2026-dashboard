@@ -103,9 +103,9 @@ input:focus-visible {
 
 /* ========= MAIN ========= */
 main{max-width:1400px;margin:0 auto;padding:2rem;}
-.tab{display:none;animation:fadeUp .3s ease;}
+.tab{display:none;animation:fadeUp .15s ease;}
 .tab.active{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 
 /* ========= SECTION TITLE ========= */
 .sec-title{
@@ -2432,9 +2432,9 @@ function showTab(id, btn) {
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({top:0, behavior:'instant'});
   // Fire TV: Fokus nach Tab-Wechsel immer auf Nav-Button setzen (kein Auto-Focus ins Suchfeld)
-  setTimeout(() => btn.focus(), 50);
+  setTimeout(() => btn.focus(), 0);
 }
 
 function toggleGroupFilters() {
