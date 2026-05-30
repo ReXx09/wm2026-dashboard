@@ -1045,7 +1045,8 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   <div class="tab" id="tab-search">
     <div class="sec-title">🔍 Suche · Spieler &amp; Teams</div>
     <div style="max-width:520px;margin-bottom:.75rem;">
-      <input type="text" class="sched-search" id="player-search-input" placeholder="Spieler- oder Teamname…" oninput="searchPlayers()" autocomplete="off">
+      <button id="search-activate-btn" onclick="document.getElementById('player-search-input').focus()" style="display:block;width:100%;padding:.55rem .9rem;margin-bottom:.4rem;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.85rem;text-align:left;cursor:pointer;">🔍 Hier klicken / Enter um Suche zu aktivieren</button>
+      <input type="text" class="sched-search" id="player-search-input" placeholder="Spieler- oder Teamname…" oninput="searchPlayers()" autocomplete="off" tabindex="0">
     </div>
     <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
       <button class="stab active" id="search-tab-players" onclick="switchSearchTab('players',this)">&#x26BD; Spieler</button>
@@ -2432,15 +2433,8 @@ function showTab(id, btn) {
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
-  if (id === 'search') {
-    setTimeout(() => {
-      const si = document.getElementById('player-search-input');
-      if (si) si.focus();
-    }, 150);
-  } else {
-    // Fire TV: Fokus nach Tab-Wechsel explizit auf Nav-Button setzen
-    setTimeout(() => btn.focus(), 50);
-  }
+  // Fire TV: Fokus nach Tab-Wechsel immer auf Nav-Button setzen (kein Auto-Focus ins Suchfeld)
+  setTimeout(() => btn.focus(), 50);
 }
 
 function toggleGroupFilters() {
