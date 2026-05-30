@@ -3545,14 +3545,13 @@ document.addEventListener('keydown', evt => {
     if (inNav) {
       const idx = navBtns.indexOf(focused);
       // Pfeil Links/Rechts → zwischen Tab-Buttons navigieren + Tab wechseln
-      if (e.key === 'ArrowLeft' && idx > 0) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
-        navBtns[idx - 1].focus();
-        navBtns[idx - 1].click();
-      } else if (e.key === 'ArrowRight' && idx < navBtns.length - 1) {
-        e.preventDefault();
-        navBtns[idx + 1].focus();
-        navBtns[idx + 1].click();
+        const nextIdx = e.key === 'ArrowRight'
+          ? (idx + 1) % navBtns.length
+          : (idx - 1 + navBtns.length) % navBtns.length;
+        navBtns[nextIdx].focus();
+        navBtns[nextIdx].click();
       } else if (e.key === 'ArrowDown') {
         // Pfeil Runter → erstes fokussierbares Element im aktiven Tab
         const activeTab = document.querySelector('.tab.active');
