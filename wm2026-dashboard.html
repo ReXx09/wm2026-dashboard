@@ -201,9 +201,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .tflag{justify-self:center;width:1.35rem;text-align:center;line-height:0;}
 .tflag-img{width:22px;height:16px;object-fit:cover;border-radius:2px;display:block;margin:0 auto;}
 .tname{display:block;font-weight:500;font-size:.82rem;min-width:0;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tname-marquee{position:relative;overflow:hidden;}
-.tname-marquee .tname-inner{display:inline-block;min-width:100%;padding-left:100%;animation:tnameMarquee 7s linear infinite;}
-@keyframes tnameMarquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
+.tname-marquee{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block;}
 .tname-host{color:var(--gold);font-weight:700;}
 .tname-debut{color:#2ec4b6;font-weight:700;}
 .pts-cell{font-weight:800;color:var(--text);}
@@ -2860,7 +2858,7 @@ function teamNameMarkup(name, team, linkMode) {
   const colorClass = (team && team.host) ? ' tname-host' : ((team && team.debut) ? ' tname-debut' : '');
   const safeN = name.replace(/'/g, "\\'");
   const inner = name.length > 12
-    ? `<span class="tname tname-marquee${colorClass}" title="${name}"><span class="tname-inner">${name}</span></span>`
+    ? `<span class="tname tname-marquee${colorClass}" title="${name}">${name}</span>`
     : `<span class="tname${colorClass}" title="${name}">${name}</span>`;
   if (hasSquad) {
     if (linkMode === false) {
