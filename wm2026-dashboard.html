@@ -78,9 +78,10 @@ nav{
 nav::-webkit-scrollbar{height:3px;}
 nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 .nb{
-  padding:.9rem 1.4rem;background:none;border:none;color:var(--text2);
+  padding:.9rem 1.1rem;background:none;border:none;color:var(--text2);
   font-size:.88rem;font-weight:500;cursor:pointer;white-space:nowrap;
-  border-bottom:3px solid transparent;display:flex;align-items:center;gap:.4rem;
+  border-bottom:3px solid transparent;display:flex;align-items:center;justify-content:center;gap:.4rem;
+  flex:0 0 auto;min-width:122px;text-align:center;
   transition:all .2s;
 }
 .nb:hover{color:var(--text);background:rgba(255,255,255,.03);}
@@ -392,6 +393,7 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   header{padding:.75rem 1rem;}
   main{padding:1rem;}
   .hd-title h1{font-size:1.15rem;}
+  .nb{min-width:108px;padding:.8rem .9rem;font-size:.8rem;}
   .match-card{grid-template-columns:1fr 80px 1fr;}
   .mname{font-size:.72rem;}
   .groups-grid{grid-template-columns:1fr;}
