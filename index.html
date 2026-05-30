@@ -2601,14 +2601,14 @@ function searchPlayers(immediate) {
         if (g.teams.find(t => t.name === name)) { groupLetter = letter; groupColor = g.color; break; }
       }
       const safeN = name.replace(/'/g, "\\'");
-      html += `<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--bg3);border:1px solid ${isFav?'rgba(240,180,41,.5)':' var(--border)'};border-radius:12px;margin-bottom:.6rem;">
+      html += `<div class="search-team-row" style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--bg3);border:1px solid ${isFav?'rgba(240,180,41,.5)':' var(--border)'};border-radius:12px;margin-bottom:.6rem;">
         <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
           ${flag}
           <span style="font-weight:700;font-size:.95rem;">${name}</span>
           ${groupLetter ? `<span style="background:${groupColor};color:#000;font-size:.62rem;font-weight:800;padding:.15rem .45rem;border-radius:5px;margin-left:.25rem;">Gr. ${groupLetter}</span>` : ''}
         </div>
-        <button onclick="openSquadModal('${safeN}',event)" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">📋 Kader</button>
-        <button onclick="setFavorite('${safeN}');searchPlayers(true);" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
+        <button class="search-row-btn" data-scol="0" onclick="openSquadModal('${safeN}',event)" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">📋 Kader</button>
+        <button class="search-row-btn" data-scol="1" onclick="setFavorite('${safeN}');searchPlayers(true);" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
       </div>`;
     });
     wrap.innerHTML = html;
@@ -3468,19 +3468,44 @@ document.addEventListener('keydown', evt => {
     const navBtns = Array.from(document.querySelectorAll('nav .nb'));
     const inNav = navBtns.includes(focused);
 
-    const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat');
+    const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn');
     if (!inNav && isRowButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       const row = focused.parentElement;
-      const rowBtns = row ? Array.from(row.querySelectorAll('button.fbtn,button.stab,button.stab-main,button.stab-cat')) : [];
+      const rowBtns = row ? Array.from(row.querySelectorAll('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn')) : [];
       const idx = rowBtns.indexOf(focused);
       if (idx !== -1) {
-        const nextIdx = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+        const nextIdx = e.key === 'ArrowRight'
+          ? (idx + 1) % rowBtns.length
+          : (idx - 1 + rowBtns.length) % rowBtns.length;
         const nextBtn = rowBtns[nextIdx];
         if (nextBtn) {
           e.preventDefault();
           nextBtn.focus();
           nextBtn.click();
           return;
+        }
+      }
+    }
+
+    const isSearchRowBtn = focused && focused.matches && focused.matches('button.search-row-btn');
+    if (!inNav && isSearchRowBtn && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab && activeTab.id === 'tab-search') {
+        const rows = Array.from(activeTab.querySelectorAll('.search-team-row'));
+        const curRow = focused.closest('.search-team-row');
+        const rowIdx = rows.indexOf(curRow);
+        const col = focused.dataset.scol || '0';
+        if (rowIdx !== -1) {
+          const nextRowIdx = e.key === 'ArrowDown' ? rowIdx + 1 : rowIdx - 1;
+          const nextRow = rows[nextRowIdx];
+          if (nextRow) {
+            const nextBtn = nextRow.querySelector(`button.search-row-btn[data-scol="${col}"]`) || nextRow.querySelector('button.search-row-btn');
+            if (nextBtn) {
+              e.preventDefault();
+              nextBtn.focus();
+              return;
+            }
+          }
         }
       }
     }
