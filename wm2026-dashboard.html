@@ -107,6 +107,17 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .tab{display:none;animation:fadeUp .15s ease;}
 .tab.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.no-animations .tab,
+.no-animations .cd-live,
+.no-animations .gm-live,
+.no-animations .live-dot.on,
+.no-animations .mscore.live,
+.no-animations .stat-c,
+.no-animations .venue-card,
+.no-animations .match-card{
+  animation:none !important;
+  transition:none !important;
+}
 
 /* ========= SECTION TITLE ========= */
 .sec-title{
@@ -237,6 +248,14 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .fav-action:hover{background:rgba(255,255,255,.09);color:var(--text);}
 .fav-status{font-size:.75rem;color:var(--text2);line-height:1.5;}
 .fav-status strong{color:var(--gold);}
+.settings-menu{display:flex;flex-direction:column;gap:.75rem;}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;}
+.setting-check{display:flex;align-items:flex-start;gap:.6rem;padding:.7rem .8rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;}
+.setting-check input{margin-top:.2rem;accent-color:var(--gold);}
+.setting-copy{display:flex;flex-direction:column;gap:.15rem;}
+.setting-title{font-size:.82rem;font-weight:800;color:var(--text);}
+.setting-desc{font-size:.72rem;color:var(--text2);line-height:1.45;}
+.settings-foot{font-size:.72rem;color:var(--text3);line-height:1.5;}
 /* Team-Namen als Link im Gruppen-Bereich */
 a.team-name-link{color:inherit;text-decoration:none;cursor:pointer;}
 a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:underline;outline:none;}
@@ -536,6 +555,10 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
         <div class="card">
           <div class="sec-title">🆕 Debütanten 2026</div>
           <div id="debut-list" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div class="sec-title">⚙ Einstellungen</div>
+          <div class="settings-menu" id="settings-menu"></div>
         </div>
         <div class="card" style="margin-top:1rem;">
           <div class="sec-title">⭐ Favoriten-Menü</div>
@@ -2438,17 +2461,32 @@ const CONF_DATA = [
 // COUNTDOWN
 // =====================================================================
 let countdownTimer = null;
+const defaultUiSettings = {
+  countdownFollowsFavorite: true,
+  showFavoriteMenu: true,
+  showNextMatchWidget: true,
+  showFavoriteFilter: true,
+  autoRefreshEnabled: true,
+  animationsEnabled: true,
+  searchAutoFocus: true,
+  highlightFavoriteMatches: true,
+  highlightFavoriteSearchResults: true,
+};
+let uiSettings = { ...defaultUiSettings };
 
 function updateCountdown() {
-  const target = new Date('2026-06-11T19:00:00-06:00').getTime();
   const now = new Date().getTime();
+  const tournamentStart = new Date('2026-06-11T19:00:00-06:00').getTime();
+  const nextFav = uiSettings.countdownFollowsFavorite && favTeam ? findUpcomingMatchForTeam(favTeam) : null;
+  const target = nextFav ? nextFav.dt.getTime() : tournamentStart;
   const diff = target - now;
   if (diff <= 0) {
     if (countdownTimer) {
       clearInterval(countdownTimer);
       countdownTimer = null;
     }
-    document.getElementById('countdown').innerHTML = '<div class="cd-label">Das Turnier läuft!</div><div class="cd-live">🔴 LIVE</div>';
+    const liveLabel = uiSettings.countdownFollowsFavorite && favTeam ? `Spiel von ${favTeam} läuft!` : 'Das Turnier läuft!';
+    document.getElementById('countdown').innerHTML = `<div class="cd-label">${liveLabel}</div><div class="cd-live">🔴 LIVE</div>`;
     return;
   }
   const d = Math.floor(diff / 86400000);
@@ -2459,6 +2497,8 @@ function updateCountdown() {
   document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
   document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
   document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  const cdLabel = document.querySelector('#countdown .cd-label');
+  if (cdLabel) cdLabel.textContent = uiSettings.countdownFollowsFavorite && favTeam ? `Nächstes Spiel von ${favTeam}` : 'Turnierstart in';
 }
 updateCountdown();
 countdownTimer = setInterval(updateCountdown, 1000);
@@ -2489,6 +2529,137 @@ function toggleGroupFilters() {
 // =====================================================================
 let favTeam = null;
 
+function loadUiSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('wm26_ui_settings') || '{}');
+    uiSettings = { ...defaultUiSettings, ...(saved && typeof saved === 'object' ? saved : {}) };
+  } catch (e) {
+    uiSettings = { ...defaultUiSettings };
+    console.warn('wm26_ui_settings konnte nicht gelesen werden:', e);
+  }
+}
+
+function saveUiSettings() {
+  try {
+    localStorage.setItem('wm26_ui_settings', JSON.stringify(uiSettings));
+  } catch (e) {
+    console.warn('wm26_ui_settings konnte nicht gespeichert werden:', e);
+  }
+}
+
+function renderSettingsMenu() {
+  const wrap = document.getElementById('settings-menu');
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <div class="settings-grid">
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.countdownFollowsFavorite ? 'checked' : ''} onchange="setUiSetting('countdownFollowsFavorite', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Counter an Favorit koppeln</span>
+          <span class="setting-desc">Der Counter zeigt das nächste Spiel des gewählten Favoriten statt nur den Turnierstart.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.showFavoriteMenu ? 'checked' : ''} onchange="setUiSetting('showFavoriteMenu', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Favoriten-Menü anzeigen</span>
+          <span class="setting-desc">Blendet die Favoriten-Auswahl in der Übersicht ein oder aus.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.showNextMatchWidget ? 'checked' : ''} onchange="setUiSetting('showNextMatchWidget', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Nächstes-Spiel-Widget anzeigen</span>
+          <span class="setting-desc">Zeigt die kompakte Vorschau des nächsten Spiels in der Übersicht.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.showFavoriteFilter ? 'checked' : ''} onchange="setUiSetting('showFavoriteFilter', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Favoriten-Filter im Spielplan</span>
+          <span class="setting-desc">Blendet den „Mein Team“-Filter im Spielplan ein oder aus.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.autoRefreshEnabled ? 'checked' : ''} onchange="setUiSetting('autoRefreshEnabled', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Auto-Refresh für Live-Daten</span>
+          <span class="setting-desc">Holt Spielstände und Live-Updates automatisch in Intervallen nach.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.animationsEnabled ? 'checked' : ''} onchange="setUiSetting('animationsEnabled', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Animationen aktiv</span>
+          <span class="setting-desc">Schaltet kleine Bewegungen und Puls-Effekte im Interface ein oder aus.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.searchAutoFocus ? 'checked' : ''} onchange="setUiSetting('searchAutoFocus', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Suche nach Tabwechsel fokussieren</span>
+          <span class="setting-desc">Springt beim Wechsel in die Suche direkt in das Eingabefeld.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.highlightFavoriteMatches ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteMatches', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Favoriten im Spielplan hervorheben</span>
+          <span class="setting-desc">Markiert Spiele mit deinem Favoriten farblich stärker in der Liste.</span>
+        </span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" ${uiSettings.highlightFavoriteSearchResults ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteSearchResults', this.checked)">
+        <span class="setting-copy">
+          <span class="setting-title">Favoriten in der Teamsuche hervorheben</span>
+          <span class="setting-desc">Zeigt deinen Favoriten in Team-Suchergebnissen mit stärkerer Markierung.</span>
+        </span>
+      </label>
+    </div>
+    <div class="settings-foot">Alle Einstellungen werden lokal im Browser gespeichert.</div>
+  `;
+}
+
+function applyUiSettings() {
+  document.body.classList.toggle('no-animations', !uiSettings.animationsEnabled);
+  const favMenuCard = document.getElementById('favorite-menu')?.closest('.card');
+  if (favMenuCard) favMenuCard.style.display = uiSettings.showFavoriteMenu ? '' : 'none';
+  const nextWidgetCard = document.getElementById('next-match-widget')?.closest('.card');
+  if (nextWidgetCard) nextWidgetCard.style.display = uiSettings.showNextMatchWidget ? '' : 'none';
+  const fb = document.getElementById('fav-filter-btn');
+  if (fb) fb.style.display = (favTeam && uiSettings.showFavoriteFilter) ? 'inline-flex' : 'none';
+  const arBtn = document.getElementById('ar-btn');
+  if (arBtn) {
+    arBtn.textContent = uiSettings.autoRefreshEnabled ? '⏸ Auto AN' : '▶ Auto AUS';
+    arBtn.style.color = uiSettings.autoRefreshEnabled ? 'var(--green)' : 'var(--text3)';
+    arBtn.classList.toggle('active-btn', uiSettings.autoRefreshEnabled);
+  }
+}
+
+function setUiSetting(key, value) {
+  uiSettings[key] = value;
+  saveUiSettings();
+  renderSettingsMenu();
+  renderFavoriteMenu();
+  applyUiSettings();
+  if (key === 'autoRefreshEnabled') {
+    clearInterval(arTimer);
+    arTimer = null;
+    if (uiSettings.autoRefreshEnabled) {
+      arTimer = setInterval(fetchLiveData, 60000);
+      fetchLiveData();
+    } else {
+      const stEl = document.getElementById('live-status-text');
+      if (stEl) {
+        stEl.textContent = 'Automatische Aktualisierung pausiert';
+        stEl.style.color = 'var(--text3)';
+      }
+    }
+  }
+  updateCountdown();
+  updateNextMatchWidget();
+}
+
 function initFavorite() {
   try {
     favTeam = localStorage.getItem('wm26_fav') || null;
@@ -2496,10 +2667,13 @@ function initFavorite() {
     favTeam = null;
     console.warn('wm26_fav konnte nicht gelesen werden:', e);
   }
+  loadUiSettings();
   renderFavBtn();
   renderFavoriteMenu();
+  renderSettingsMenu();
+  applyUiSettings();
   const fb = document.getElementById('fav-filter-btn');
-  if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+  if (fb) fb.style.display = (favTeam && uiSettings.showFavoriteFilter) ? 'inline-flex' : 'none';
   updateCountdown();
   updateNextMatchWidget();
 }
@@ -2534,6 +2708,7 @@ function buildFavoriteOptions() {
 function renderFavoriteMenu() {
   const wrap = document.getElementById('favorite-menu');
   if (!wrap) return;
+  if (!uiSettings.showFavoriteMenu) return;
   const current = favTeam
     ? `<div class="fav-status">Aktuell aktiv: <strong>${favTeam}</strong>. Der Counter läuft bis zum nächsten Spiel dieses Teams.</div>`
     : `<div class="fav-status">Kein Favorit gesetzt. Ohne Auswahl läuft der Counter zum Turnierstart bzw. zum nächsten allgemeinen Spiel.</div>`;
@@ -2592,8 +2767,10 @@ function setFavorite(name) {
   }
   renderFavBtn();
   renderFavoriteMenu();
+  renderSettingsMenu();
+  applyUiSettings();
   const fb = document.getElementById('fav-filter-btn');
-  if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+  if (fb) fb.style.display = (favTeam && uiSettings.showFavoriteFilter) ? 'inline-flex' : 'none';
   updateCountdown();
   updateNextMatchWidget();
   // Kader-Modals neu rendern um Star-Button zu aktualisieren
@@ -2615,9 +2792,10 @@ function renderSquadFavBtn(teamName) {
 function updateNextMatchWidget() {
   const wrap = document.getElementById('next-match-widget');
   if (!wrap) return;
+  if (!uiSettings.showNextMatchWidget) return;
   const now = new Date();
   let next = null;
-  const preferred = favTeam ? findUpcomingMatchForTeam(favTeam) : null;
+  const preferred = uiSettings.countdownFollowsFavorite && favTeam ? findUpcomingMatchForTeam(favTeam) : null;
   const fallback = findUpcomingMatchForTeam(null);
   next = preferred || fallback;
   if (!next) { wrap.innerHTML = ''; return; }
@@ -2630,7 +2808,7 @@ function updateNextMatchWidget() {
   const aFlag = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}">` : m.af;
   wrap.innerHTML = `<div style="background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid rgba(240,180,41,.35);border-radius:14px;padding:1rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;">
     <div style="flex:0 0 auto;">
-      <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;">${live ? '🔴 JETZT LIVE' : (favTeam ? '⏭ Nächstes Spiel von ' + favTeam : '⏭ Nächstes Spiel')}</div>
+      <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;">${live ? '🔴 JETZT LIVE' : (uiSettings.countdownFollowsFavorite && favTeam ? '⏭ Nächstes Spiel von ' + favTeam : '⏭ Nächstes Spiel')}</div>
       <span class="mgroup-badge" style="background:${gc};color:#000;">${phLabel}</span>
     </div>
     <div style="flex:1 1 auto;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
@@ -2655,10 +2833,12 @@ function switchSearchTab(mode, btn) {
   document.querySelectorAll('#search-tab-players,#search-tab-teams').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   searchPlayers(true);
-  setTimeout(() => {
-    const input = document.getElementById('player-search-input');
-    if (input) input.focus();
-  }, 0);
+  if (uiSettings.searchAutoFocus) {
+    setTimeout(() => {
+      const input = document.getElementById('player-search-input');
+      if (input) input.focus();
+    }, 0);
+  }
 }
 
 function searchPlayers(immediate) {
@@ -2686,20 +2866,25 @@ function searchPlayers(immediate) {
       const code = FLAG_CODES[name];
       const flag = code ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${code}.png" alt="${name}" style="width:28px;height:20px;">` : '';
       const isFav = favTeam === name;
+      const favBorder = uiSettings.highlightFavoriteSearchResults && isFav ? 'rgba(240,180,41,.5)' : 'var(--border)';
+      const favBg = uiSettings.highlightFavoriteSearchResults && isFav ? 'rgba(240,180,41,.08)' : 'var(--bg3)';
+      const favBtnBg = uiSettings.highlightFavoriteSearchResults && isFav ? 'rgba(240,180,41,.2)' : 'rgba(255,255,255,.05)';
+      const favBtnBorder = uiSettings.highlightFavoriteSearchResults && isFav ? 'rgba(240,180,41,.5)' : 'var(--border)';
+      const favBtnColor = uiSettings.highlightFavoriteSearchResults && isFav ? 'var(--gold)' : 'var(--text2)';
       // Gruppe finden
       let groupLetter = '', groupColor = '#888';
       for (const [letter, g] of Object.entries(GROUPS)) {
         if (g.teams.find(t => t.name === name)) { groupLetter = letter; groupColor = g.color; break; }
       }
       const safeN = name.replace(/'/g, "\\'");
-      html += `<div class="search-team-row" style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--bg3);border:1px solid ${isFav?'rgba(240,180,41,.5)':' var(--border)'};border-radius:12px;margin-bottom:.6rem;">
+      html += `<div class="search-team-row" style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:${favBg};border:1px solid ${favBorder};border-radius:12px;margin-bottom:.6rem;">
         <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
           ${flag}
           <span style="font-weight:700;font-size:.95rem;">${name}</span>
           ${groupLetter ? `<span style="background:${groupColor};color:#000;font-size:.62rem;font-weight:800;padding:.15rem .45rem;border-radius:5px;margin-left:.25rem;">Gr. ${groupLetter}</span>` : ''}
         </div>
         <button class="search-row-btn" data-scol="0" onclick="openSquadModal('${safeN}',event)" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">📋 Kader</button>
-        <button class="search-row-btn" data-scol="1" onclick="setFavorite('${safeN}');searchPlayers(true);" style="background:${isFav?'rgba(240,180,41,.2)':'rgba(255,255,255,.05)'};border:1px solid ${isFav?'rgba(240,180,41,.5)':'var(--border)'};color:${isFav?'var(--gold)':'var(--text2)'};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
+        <button class="search-row-btn" data-scol="1" onclick="setFavorite('${safeN}');searchPlayers(true);" style="background:${favBtnBg};border:1px solid ${favBtnBorder};color:${favBtnColor};border-radius:8px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;">${isFav?'⭐ Favorit':'☆ Pinnen'}</button>
       </div>`;
     });
     wrap.innerHTML = html;
@@ -3228,24 +3413,14 @@ async function fetchLiveData() {
 }
 
 function toggleAutoRefresh() {
-  autoRefresh = !autoRefresh;
-  const btn = document.getElementById('ar-btn');
-  if(autoRefresh) {
-    btn.textContent='⏸ Auto AN'; btn.style.color='var(--green)';
-    arTimer = setInterval(fetchLiveData, 60000);
-    fetchLiveData();
-  } else {
-    btn.textContent='▶ Auto AUS'; btn.style.color='var(--text3)';
-    clearInterval(arTimer);
-    const stEl=document.getElementById('live-status-text');
-    if(stEl){stEl.textContent='Automatische Aktualisierung pausiert';stEl.style.color='var(--text3)';}
-  }
+  setUiSetting('autoRefreshEnabled', !uiSettings.autoRefreshEnabled);
 }
 
 function initLiveData() {
+  loadUiSettings();
   loadCache();
   fetchLiveData();
-  arTimer = setInterval(fetchLiveData, 60000);
+  if (uiSettings.autoRefreshEnabled) arTimer = setInterval(fetchLiveData, 60000);
 }
 
 // =====================================================================
@@ -3449,7 +3624,7 @@ function renderMatches() {
       const hFlagImg = FLAG_CODES[m.home] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.home]}.png" alt="${m.home}" loading="lazy">` : `<span class="mflag">${m.hf}</span>`;
       const aFlagImg = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}" loading="lazy">` : `<span class="mflag">${m.af}</span>`;
       const finalStyle = m.phase === 'Finale' ? 'background:linear-gradient(135deg,#1e2a10,#162038);' : '';
-      const isFavMatch = favTeam && (m.home === favTeam || m.away === favTeam);
+      const isFavMatch = uiSettings.highlightFavoriteMatches && favTeam && (m.home === favTeam || m.away === favTeam);
       html += `<div class="match-card${isFavMatch?' fav-highlight':''}" data-group="${m.group}" style="${finalStyle}">
         <div class="mteam">
           <span class="mflag">${hFlagImg}</span>
