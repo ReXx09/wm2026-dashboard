@@ -567,6 +567,13 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 
   <!-- ====== OVERVIEW TAB ====== -->
   <div class="tab active" id="tab-overview">
+    <div class="highlights-ticker" aria-label="Highlights Ticker">
+      <div class="highlights-track" id="highlights-ticker-track">
+        <span>✨ Highlights werden vorbereitet…</span>
+        <span aria-hidden="true">✨ Highlights werden vorbereitet…</span>
+      </div>
+    </div>
+
     <div class="ov-stats">
       <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('groups')" onkeydown="handleOverviewTileKey(event,'groups')"><div class="stat-icon">🌍</div><div class="stat-val">48</div><div class="stat-label">Mannschaften</div></div>
       <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">⚽</div><div class="stat-val">104</div><div class="stat-label">Spiele</div></div>
@@ -574,13 +581,6 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🗺️</div><div class="stat-val">3</div><div class="stat-label">Gastgeberländer</div></div>
       <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🏙️</div><div class="stat-val">16</div><div class="stat-label">Austragungsorte</div></div>
       <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">📅</div><div class="stat-val">39</div><div class="stat-label">Turniertage</div></div>
-    </div>
-
-    <div class="highlights-ticker" aria-label="Highlights Ticker">
-      <div class="highlights-track" id="highlights-ticker-track">
-        <span>✨ Highlights werden vorbereitet…</span>
-        <span aria-hidden="true">✨ Highlights werden vorbereitet…</span>
-      </div>
     </div>
 
     <div class="ov-two">
@@ -4669,6 +4669,17 @@ document.addEventListener('keydown', evt => {
       });
   }
 
+  function getInitialFocusTargetForActiveTab() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return null;
+    if (activeTab.id === 'tab-overview') {
+      return activeTab.querySelector('.ov-stats .overview-focusable')
+        || activeTab.querySelector('.overview-focusable');
+    }
+    const focusables = getFocusableInActiveTab();
+    return focusables[0] || null;
+  }
+
   function shouldJumpToNavOnArrowUp(focused) {
     const activeTab = document.querySelector('.tab.active');
     if (!activeTab || !focused || !activeTab.contains(focused)) return true;
@@ -4867,11 +4878,8 @@ document.addEventListener('keydown', evt => {
         navBtns[nextIdx].click();
       } else if (e.key === 'ArrowDown') {
         // Pfeil Runter → erstes fokussierbares Element im aktiven Tab
-        const activeTab = document.querySelector('.tab.active');
-        if (activeTab) {
-          const first = activeTab.querySelector('a, button, input');
-          if (first) { e.preventDefault(); first.focus(); }
-        }
+        const first = getInitialFocusTargetForActiveTab();
+        if (first) { e.preventDefault(); first.focus(); }
       }
     }
   });
