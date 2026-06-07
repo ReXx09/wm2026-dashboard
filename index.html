@@ -222,6 +222,21 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .gm-date{font-size:.68rem;color:var(--text3);min-width:70px;}
 .gm-live{font-size:.65rem;color:var(--green);font-weight:800;animation:blink 1s infinite;}
 .debut-tag{background:rgba(46,196,182,.15);color:var(--green);font-size:.5rem;font-weight:700;padding:.1em .3em;border-radius:3px;text-transform:uppercase;border:1px solid rgba(46,196,182,.3);}
+.fav-menu{display:flex;flex-direction:column;gap:.75rem;}
+.fav-menu-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}
+.fav-select{
+  flex:1 1 240px;min-width:220px;padding:.6rem .8rem;background:var(--bg4);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.85rem;outline:none;
+}
+.fav-select:focus{border-color:rgba(240,180,41,.5);box-shadow:0 0 0 2px rgba(240,180,41,.12);}
+.fav-action{
+  padding:.58rem .9rem;border-radius:10px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--text2);font-size:.8rem;font-weight:700;cursor:pointer;
+}
+.fav-action.primary{background:rgba(240,180,41,.18);color:var(--gold);border-color:rgba(240,180,41,.35);}
+.fav-action:hover{background:rgba(255,255,255,.09);color:var(--text);}
+.fav-status{font-size:.75rem;color:var(--text2);line-height:1.5;}
+.fav-status strong{color:var(--gold);}
 /* Team-Namen als Link im Gruppen-Bereich */
 a.team-name-link{color:inherit;text-decoration:none;cursor:pointer;}
 a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:underline;outline:none;}
@@ -521,6 +536,18 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
         <div class="card">
           <div class="sec-title">🆕 Debütanten 2026</div>
           <div id="debut-list" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div class="sec-title">⭐ Favoriten-Menü</div>
+          <div class="fav-menu" id="favorite-menu">
+            <div class="fav-status">Wähle ein Team, dann zeigt der Counter das nächste Spiel dieses Favoriten an.</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div class="sec-title">⏭ Nächstes Spiel</div>
+          <div id="next-match-widget">
+            <div class="fav-status">Wähle einen Favoriten, um hier das nächste Spiel dieses Teams zu sehen.</div>
+          </div>
         </div>
         <div class="card" style="margin-top:1rem;">
           <div class="sec-title">⚡ Eröffnungsspiele</div>
@@ -2470,8 +2497,11 @@ function initFavorite() {
     console.warn('wm26_fav konnte nicht gelesen werden:', e);
   }
   renderFavBtn();
+  renderFavoriteMenu();
   const fb = document.getElementById('fav-filter-btn');
   if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+  updateCountdown();
+  updateNextMatchWidget();
 }
 
 function renderFavBtn() {
@@ -2482,6 +2512,66 @@ function renderFavBtn() {
     fb.textContent = '⭐ ' + favTeam;
     fb.dataset.filter = 'fav';
   }
+}
+
+function buildFavoriteOptions() {
+  const seen = new Set();
+  let html = '<option value="">-- Favorit wählen --</option>';
+  Object.entries(GROUPS || {}).forEach(([letter, group]) => {
+    group.teams.forEach(team => {
+      if (seen.has(team.name)) return;
+      seen.add(team.name);
+      const meta = [];
+      if (team.host) meta.push('Gastgeber');
+      if (team.debut) meta.push('Debüt');
+      const suffix = meta.length ? ` · ${meta.join(' · ')}` : '';
+      html += `<option value="${team.name}">${letter} · ${team.name}${suffix}</option>`;
+    });
+  });
+  return html;
+}
+
+function renderFavoriteMenu() {
+  const wrap = document.getElementById('favorite-menu');
+  if (!wrap) return;
+  const current = favTeam
+    ? `<div class="fav-status">Aktuell aktiv: <strong>${favTeam}</strong>. Der Counter läuft bis zum nächsten Spiel dieses Teams.</div>`
+    : `<div class="fav-status">Kein Favorit gesetzt. Ohne Auswahl läuft der Counter zum Turnierstart bzw. zum nächsten allgemeinen Spiel.</div>`;
+  wrap.innerHTML = `
+    ${current}
+    <div class="fav-menu-row">
+      <select class="fav-select" id="favorite-select" aria-label="Favorit auswählen">
+        ${buildFavoriteOptions()}
+      </select>
+      <button class="fav-action primary" type="button" onclick="applyFavoriteSelection()">Übernehmen</button>
+      <button class="fav-action" type="button" onclick="clearFavoriteSelection()">Löschen</button>
+    </div>
+  `;
+  const select = document.getElementById('favorite-select');
+  if (select) select.value = favTeam || '';
+}
+
+function applyFavoriteSelection() {
+  const select = document.getElementById('favorite-select');
+  if (!select) return;
+  const name = select.value;
+  if (!name) {
+    clearFavoriteSelection();
+    return;
+  }
+  if (name === favTeam) {
+    renderFavoriteMenu();
+    return;
+  }
+  setFavorite(name);
+}
+
+function clearFavoriteSelection() {
+  if (!favTeam) {
+    renderFavoriteMenu();
+    return;
+  }
+  setFavorite(favTeam);
 }
 
 function setFavorite(name) {
@@ -2501,8 +2591,11 @@ function setFavorite(name) {
     }
   }
   renderFavBtn();
+  renderFavoriteMenu();
   const fb = document.getElementById('fav-filter-btn');
   if (fb) fb.style.display = favTeam ? 'inline-flex' : 'none';
+  updateCountdown();
+  updateNextMatchWidget();
   // Kader-Modals neu rendern um Star-Button zu aktualisieren
   const title = document.getElementById('squad-title');
   if (title && title.dataset && title.dataset.team) renderSquadFavBtn(title.dataset.team);
@@ -2524,16 +2617,9 @@ function updateNextMatchWidget() {
   if (!wrap) return;
   const now = new Date();
   let next = null;
-  for (const m of MATCHES) {
-    if (!m.date) continue;
-    const timeStr = m.time.replace(/\+1$/,'').replace(/\+1/,'');
-    const [hh,mm] = timeStr.split(':').map(Number);
-    const dt = new Date(m.date + 'T' + String(hh).padStart(2,'0') + ':' + String(mm||0).padStart(2,'0') + ':00');
-    const ls = liveScores[m.n];
-    if (ls && ls.done) continue;
-    if (ls && ls.live) { next = {m, dt, live:true}; break; }
-    if (dt > now) { next = {m, dt, live:false}; break; }
-  }
+  const preferred = favTeam ? findUpcomingMatchForTeam(favTeam) : null;
+  const fallback = findUpcomingMatchForTeam(null);
+  next = preferred || fallback;
   if (!next) { wrap.innerHTML = ''; return; }
   const {m, dt, live} = next;
   const gc = GROUP_COLORS[m.group] || '#888';
@@ -2544,7 +2630,7 @@ function updateNextMatchWidget() {
   const aFlag = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}">` : m.af;
   wrap.innerHTML = `<div style="background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid rgba(240,180,41,.35);border-radius:14px;padding:1rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;">
     <div style="flex:0 0 auto;">
-      <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;">${live ? '🔴 JETZT LIVE' : '⏭ Nächstes Spiel'}</div>
+      <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.25rem;">${live ? '🔴 JETZT LIVE' : (favTeam ? '⏭ Nächstes Spiel von ' + favTeam : '⏭ Nächstes Spiel')}</div>
       <span class="mgroup-badge" style="background:${gc};color:#000;">${phLabel}</span>
     </div>
     <div style="flex:1 1 auto;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
