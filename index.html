@@ -366,13 +366,27 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 .lbtn{padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:.74rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .lbtn:hover{background:rgba(255,255,255,.1);color:var(--text);}
 .lbtn.active-btn{color:var(--green);border-color:rgba(46,196,182,.4);}
+.lbtn.test-on{color:var(--gold);border-color:rgba(240,180,41,.45);background:rgba(240,180,41,.14);}
 .highlights-ticker{margin-bottom:1rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;padding:.5rem .8rem;}
 .highlights-track{display:flex;gap:2.2rem;white-space:nowrap;width:max-content;animation:tickerScroll 42s linear infinite;}
 .highlights-track span{font-size:.76rem;color:var(--text2);letter-spacing:.01em;}
 .highlights-ticker:hover .highlights-track{animation-play-state:paused;}
 @keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
-.focus-live-ticker{margin-top:.6rem;border:1px solid rgba(46,196,182,.25);background:rgba(46,196,182,.06);border-radius:10px;padding:.5rem .65rem;overflow:hidden;}
+.focus-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.6rem;}
+@media(max-width:900px){.focus-detail-grid{grid-template-columns:1fr;}}
+.focus-pane{border:1px solid var(--border);background:rgba(255,255,255,.03);border-radius:10px;padding:.55rem .7rem;min-height:130px;}
+.focus-lineup-pane{border-color:rgba(240,180,41,.28);background:rgba(240,180,41,.06);}
+.focus-live-ticker{border-color:rgba(46,196,182,.25);background:rgba(46,196,182,.06);display:flex;flex-direction:column;}
 .focus-live-label{font-size:.68rem;color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;}
+.focus-live-list{display:flex;flex-direction:column;gap:.35rem;max-height:165px;overflow:auto;padding-right:.2rem;}
+.focus-live-item{font-size:.74rem;color:var(--text2);line-height:1.45;padding:.32rem .45rem;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.16);border-radius:7px;}
+.focus-mode-switch{display:flex;gap:.35rem;align-items:center;margin:0 0 .35rem auto;}
+.focus-mode-btn{padding:.2rem .55rem;font-size:.66rem;border-radius:999px;}
+.focus-header-actions{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+.focus-live-marquee-clip{width:100%;overflow:hidden;position:relative;border-radius:7px;}
+.focus-live-marquee-clip::before,.focus-live-marquee-clip::after{content:"";position:absolute;top:0;bottom:0;width:34px;pointer-events:none;z-index:2;}
+.focus-live-marquee-clip::before{left:0;background:linear-gradient(90deg,rgba(14,23,45,.95) 0%,rgba(14,23,45,0) 100%);}
+.focus-live-marquee-clip::after{right:0;background:linear-gradient(270deg,rgba(14,23,45,.95) 0%,rgba(14,23,45,0) 100%);}
 .focus-live-track{display:flex;gap:1.4rem;white-space:nowrap;width:max-content;animation:tickerScroll 28s linear infinite;}
 .focus-live-track span{font-size:.74rem;color:var(--text2);}
 .focus-live-ticker:hover .focus-live-track{animation-play-state:paused;}
@@ -688,6 +702,7 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <div class="live-sep"></div>
       <span id="live-last-update" style="color:var(--text3);">–</span>
       <div style="margin-left:auto;display:flex;gap:.4rem;">
+        <button class="lbtn" id="live-test-btn" onclick="toggleLiveTest()">🧪 Live-Test</button>
         <button class="lbtn" onclick="fetchLiveData()">🔄 Jetzt laden</button>
         <button class="lbtn active-btn" id="ar-btn" onclick="toggleAutoRefresh()">⏸ Auto AN</button>
       </div>
@@ -2527,6 +2542,8 @@ const defaultUiSettings = {
   searchAutoFocus: true,
   highlightFavoriteMatches: true,
   highlightFavoriteSearchResults: true,
+  focusedTickerMode: 'highlights',
+  focusViewVariant: 'cards',
 };
 let uiSettings = { ...defaultUiSettings };
 
@@ -2747,6 +2764,9 @@ function setUiSetting(key, value) {
         stEl.style.color = 'var(--text3)';
       }
     }
+  }
+  if (key === 'focusedTickerMode' || key === 'focusViewVariant') {
+    renderMatchFocus();
   }
   updateCountdown();
   updateNextMatchWidget();
@@ -3457,6 +3477,7 @@ function buildGroups() {
 let activeFilter = 'all';
 let searchVal = '';
 let focusedMatchNum = null;
+let currentOpenGroupLetter = null;
 
 function setFilter(btn) {
   document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
@@ -3551,6 +3572,8 @@ let highlightTickerItems = [];
 let lastFetch = null;
 let autoRefresh = true;
 let arTimer = null;
+let liveTestMode = false;
+let liveTestSnapshot = null;
 
 function buildHighlightsTickerItems() {
   const now = Date.now();
@@ -3601,6 +3624,136 @@ function renderHighlightsTicker() {
     : ['✨ Keine Live-Highlights verfügbar. Der Ticker aktualisiert sich automatisch.'];
   const row = items.map(s => escapeHtml(s)).join(' &nbsp;&nbsp; ✦ &nbsp;&nbsp; ');
   track.innerHTML = `<span>${row}</span><span aria-hidden="true">${row}</span>`;
+}
+
+function cloneLiveState() {
+  return {
+    liveScores: JSON.parse(JSON.stringify(liveScores || {})),
+    liveLineups: JSON.parse(JSON.stringify(liveLineups || {})),
+    liveMatchFeed: JSON.parse(JSON.stringify(liveMatchFeed || {})),
+    liveCards: JSON.parse(JSON.stringify(liveCards || {})),
+    highlightTickerItems: JSON.parse(JSON.stringify(highlightTickerItems || [])),
+  };
+}
+
+function applyMockLiveScenario() {
+  const picks = (MATCHES || []).slice(0, 4);
+  if (!picks.length) return;
+  const now = Date.now();
+
+  picks.forEach((m, i) => {
+    if (i === 0) {
+      liveScores[m.n] = { h: 1, a: 0, status: 'STATUS_IN_PROGRESS', clock: '63:12', live: true, done: false };
+      liveCards[m.n] = { home: 0, away: 1, checkedAt: now };
+      liveLineups[m.n] = {
+        status: 'available',
+        home: ['Torwart A', 'Abwehr A1', 'Abwehr A2', 'Mittelfeld A1', 'Stürmer A1'],
+        away: ['Torwart B', 'Abwehr B1', 'Abwehr B2', 'Mittelfeld B1', 'Stürmer B1'],
+        checkedAt: now,
+      };
+      liveMatchFeed[m.n] = {
+        status: 'available',
+        items: ['63:12 · Tor durch Heimteam', '58:04 · VAR-Check abgeschlossen', '49:31 · 🟥 Rote Karte für Auswärtsteam'],
+        fullItems: ['63:12 · Heimteam · Tor durch Heimteam', '58:04 · VAR-Check abgeschlossen', '54:18 · Ecke Heimteam', '49:31 · Auswärtsteam · 🟥 Rote Karte', '45:00 · Halbzeitpfiff'],
+        checkedAt: now,
+      };
+    } else if (i === 1) {
+      liveScores[m.n] = { h: 2, a: 2, status: 'STATUS_HALFTIME', clock: '45:00', live: true, done: false };
+      liveCards[m.n] = { home: 1, away: 0, checkedAt: now };
+      liveMatchFeed[m.n] = {
+        status: 'available',
+        items: ['45:00 · Halbzeit', '42:09 · Ausgleich zum 2:2', '19:20 · Gelbe Karte Heimteam'],
+        fullItems: ['45:00 · Halbzeit', '42:09 · Ausgleich zum 2:2', '36:12 · Großchance Auswärtsteam', '31:44 · Abseits Heimteam', '19:20 · Gelbe Karte Heimteam'],
+        checkedAt: now,
+      };
+    } else {
+      liveScores[m.n] = { h: null, a: null, status: 'STATUS_SCHEDULED', clock: '', live: false, done: false };
+      liveCards[m.n] = { home: 0, away: 0, checkedAt: now };
+      liveLineups[m.n] = { status: 'pending', home: [], away: [], checkedAt: now };
+      liveMatchFeed[m.n] = { status: 'pending', items: [], checkedAt: now };
+      liveMatchFeed[m.n].fullItems = [];
+    }
+  });
+
+  if (!focusedMatchNum || !liveScores[focusedMatchNum]) {
+    focusedMatchNum = picks[0].n;
+  }
+}
+
+function ensureMockDataForFocusedMatch(matchNum) {
+  if (!liveTestMode || !matchNum) return;
+  const match = MATCHES.find(m => m.n === matchNum);
+  if (!match) return;
+  const now = Date.now();
+
+  if (!liveScores[matchNum]) {
+    liveScores[matchNum] = { h: 1, a: 1, status: 'STATUS_IN_PROGRESS', clock: '52:00', live: true, done: false };
+  }
+  if (!liveCards[matchNum]) {
+    liveCards[matchNum] = { home: 0, away: 0, checkedAt: now };
+  }
+  if (!liveLineups[matchNum]) {
+    liveLineups[matchNum] = {
+      status: 'pending',
+      home: [],
+      away: [],
+      checkedAt: now,
+    };
+  }
+  if (!liveMatchFeed[matchNum]) {
+    liveMatchFeed[matchNum] = {
+      status: 'available',
+      items: [`52:00 · ${match.home} vs ${match.away} · Live-Test aktiv`],
+      fullItems: [
+        `52:00 · ${match.home} vs ${match.away} · Live-Test aktiv`,
+        `46:00 · Zweite Halbzeit läuft`,
+      ],
+      checkedAt: now,
+    };
+  }
+}
+
+function setLiveTestButtonState() {
+  const btn = document.getElementById('live-test-btn');
+  if (!btn) return;
+  btn.classList.toggle('test-on', liveTestMode);
+  btn.textContent = liveTestMode ? '🧪 Test beenden' : '🧪 Live-Test';
+}
+
+function toggleLiveTest() {
+  const stEl = document.getElementById('live-status-text');
+  const tsEl = document.getElementById('live-last-update');
+  const dot = document.getElementById('live-dot');
+
+  if (!liveTestMode) {
+    liveTestSnapshot = cloneLiveState();
+    liveTestMode = true;
+    applyMockLiveScenario();
+    highlightTickerItems = buildHighlightsTickerItems();
+    renderHighlightsTicker();
+    renderMatches();
+    refreshOpenGroupModal();
+    buildBracket();
+    updateCountdown();
+    updateNextMatchWidget();
+    if (dot) dot.classList.add('on');
+    if (stEl) { stEl.textContent = '🧪 Live-Test aktiv (Mock-Daten)'; stEl.style.color = 'var(--gold)'; }
+    if (tsEl) tsEl.textContent = `Test: ${new Date().toLocaleTimeString('de-DE')}`;
+    setLiveTestButtonState();
+    return;
+  }
+
+  liveTestMode = false;
+  if (liveTestSnapshot) {
+    liveScores = liveTestSnapshot.liveScores || {};
+    liveLineups = liveTestSnapshot.liveLineups || {};
+    liveMatchFeed = liveTestSnapshot.liveMatchFeed || {};
+    liveCards = liveTestSnapshot.liveCards || {};
+    highlightTickerItems = liveTestSnapshot.highlightTickerItems || [];
+    liveTestSnapshot = null;
+  }
+  setLiveTestButtonState();
+  fetchLiveData();
 }
 
 function toDE(enName) { return ALIASES[enName] || TEAM_DE[enName] || enName; }
@@ -3696,12 +3849,13 @@ function parseMatchFeedFromSummary(data) {
   const raw = [];
   if (Array.isArray(data?.keyEvents)) raw.push(...data.keyEvents);
   if (Array.isArray(data?.plays)) raw.push(...data.plays);
-  const items = raw
+  const normalized = raw
     .map(normalizeFeedItem)
     .filter(Boolean)
-    .slice(0, 12)
     .map(s => s.replace(/\s+/g, ' ').trim());
-  return Array.from(new Set(items));
+  const fullItems = normalized.slice(0, 36);
+  const items = Array.from(new Set(normalized)).slice(0, 12);
+  return { items, fullItems };
 }
 
 function parseLineupNames(entry) {
@@ -3758,10 +3912,11 @@ async function fetchLineupForMatch(eventId, match, isLive) {
     const parsed = parseLineupsFromSummary(data, match);
     liveLineups[match.n] = parsed || { status: 'pending', home: [], away: [], checkedAt: Date.now() };
     liveCards[match.n] = parseRedCardsFromSummary(data, match);
-    const feedItems = parseMatchFeedFromSummary(data);
+    const feedData = parseMatchFeedFromSummary(data);
     liveMatchFeed[match.n] = {
-      status: feedItems.length ? 'available' : 'pending',
-      items: feedItems,
+      status: (feedData.items.length || feedData.fullItems.length) ? 'available' : 'pending',
+      items: feedData.items,
+      fullItems: feedData.fullItems,
       checkedAt: Date.now(),
     };
   } catch (e) {
@@ -3771,9 +3926,10 @@ async function fetchLineupForMatch(eventId, match, isLive) {
       liveLineups[match.n].checkedAt = Date.now();
     }
     if (!liveMatchFeed[match.n]) {
-      liveMatchFeed[match.n] = { status: 'pending', items: [], checkedAt: Date.now() };
+      liveMatchFeed[match.n] = { status: 'pending', items: [], fullItems: [], checkedAt: Date.now() };
     } else {
       liveMatchFeed[match.n].checkedAt = Date.now();
+      liveMatchFeed[match.n].fullItems = liveMatchFeed[match.n].fullItems || [];
     }
     if (!liveCards[match.n]) {
       liveCards[match.n] = { home: 0, away: 0, checkedAt: Date.now() };
@@ -3787,6 +3943,15 @@ async function fetchLiveData() {
   const dot = document.getElementById('live-dot');
   const stEl = document.getElementById('live-status-text');
   const tsEl = document.getElementById('live-last-update');
+  if (liveTestMode) {
+    if (stEl) { stEl.textContent = '🧪 Live-Test aktiv (Mock-Daten)'; stEl.style.color = 'var(--gold)'; }
+    if (tsEl) tsEl.textContent = `Test: ${new Date().toLocaleTimeString('de-DE')}`;
+    renderMatches();
+    refreshOpenGroupModal();
+    updateNextMatchWidget();
+    renderHighlightsTicker();
+    return;
+  }
   if (stEl) { stEl.textContent='Daten werden geladen…'; stEl.style.color='var(--text2)'; }
 
   try {
@@ -3838,6 +4003,7 @@ async function fetchLiveData() {
     highlightTickerItems = buildHighlightsTickerItems();
     renderHighlightsTicker();
     renderMatches();
+    refreshOpenGroupModal();
     buildBracket();
     updateCountdown();
     updateNextMatchWidget();
@@ -3858,6 +4024,7 @@ function initLiveData() {
   switchSearchPanel('search', document.getElementById('search-panel-search-btn'));
   highlightTickerItems = buildHighlightsTickerItems();
   renderHighlightsTicker();
+  setLiveTestButtonState();
   fetchLiveData();
   if (uiSettings.autoRefreshEnabled) arTimer = setInterval(fetchLiveData, 60000);
 }
@@ -4105,7 +4272,7 @@ function buildLineupInfoHtml(m, nowMs, expanded) {
     const homeNames = lu.home.map(n => escapeHtml(n)).join(' · ') || 'noch offen';
     const awayNames = lu.away.map(n => escapeHtml(n)).join(' · ') || 'noch offen';
     if (expanded) {
-      return `<div style="margin-top:.6rem;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem .7rem;background:rgba(255,255,255,.02);">
+      return `<div class="focus-pane focus-lineup-pane">
         <div style="font-size:.7rem;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;">🧩 Aufstellungen bekannt</div>
         <div style="font-size:.75rem;color:var(--text2);line-height:1.55;">
           <div><strong style="color:var(--text);">${escapeHtml(m.home)}:</strong> ${homeNames}</div>
@@ -4130,7 +4297,7 @@ function buildLineupInfoHtml(m, nowMs, expanded) {
     const startsTxt = (startsInMs !== null && startsInMs > 0)
       ? `Voraussichtlich kurz vor Anpfiff (${Math.ceil(startsInMs / 86400000)} Tag(e) vorher).`
       : 'Noch keine bestätigten Aufstellungen vorhanden.';
-    return `<div style="margin-top:.6rem;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem .7rem;background:rgba(255,255,255,.02);">
+    return `<div class="focus-pane focus-lineup-pane">
       <div style="font-size:.7rem;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;">🧩 Aufstellungen</div>
       <div style="font-size:.75rem;color:var(--text2);line-height:1.55;">Noch nicht veröffentlicht. ${startsTxt} Die Anzeige aktualisiert sich automatisch, sobald die Daten vorliegen.</div>
     </div>`;
@@ -4141,6 +4308,16 @@ function buildLineupInfoHtml(m, nowMs, expanded) {
 
 function setFocusedMatch(matchNum) {
   focusedMatchNum = matchNum;
+  ensureMockDataForFocusedMatch(matchNum);
+  if (liveTestMode) {
+    highlightTickerItems = buildHighlightsTickerItems();
+    renderHighlightsTicker();
+    const stEl = document.getElementById('live-status-text');
+    const tsEl = document.getElementById('live-last-update');
+    if (stEl) { stEl.textContent = '🧪 Live-Test aktiv (Mock-Daten)'; stEl.style.color = 'var(--gold)'; }
+    if (tsEl) tsEl.textContent = `Test: ${new Date().toLocaleTimeString('de-DE')}`;
+    setLiveTestButtonState();
+  }
   renderMatches();
 }
 
@@ -4173,11 +4350,21 @@ function renderMatchFocus() {
   const aFlagImg = FLAG_CODES[m.away] ? `<img class="tflag-img" src="https://flagcdn.com/24x18/${FLAG_CODES[m.away]}.png" alt="${m.away}" loading="lazy">` : `<span class="mflag">${m.af}</span>`;
   const lineupHtml = buildLineupInfoHtml(m, Date.now(), true);
   const focusTickerHtml = buildFocusedLiveTickerHtml(m);
+  const focusTickerMarqueeHtml = buildFocusedLiveTickerMarqueeHtml(m);
+  const viewMode = uiSettings.focusViewVariant === 'marquee' ? 'marquee' : 'cards';
+  const viewSwitch = `<div class="focus-header-actions">
+      <button class="lbtn focus-mode-btn ${viewMode === 'cards' ? 'active-btn' : ''}" onclick="setUiSetting('focusViewVariant','cards')">Kacheln</button>
+      <button class="lbtn focus-mode-btn ${viewMode === 'marquee' ? 'active-btn' : ''}" onclick="setUiSetting('focusViewVariant','marquee')">Laufschrift</button>
+      <button class="lbtn" onclick="clearFocusedMatch()">✕ Fokus schließen</button>
+    </div>`;
+  const detailHtml = viewMode === 'cards'
+    ? `<div class="focus-detail-grid">${lineupHtml}${focusTickerHtml}</div>`
+    : `<div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.6rem;">${focusTickerMarqueeHtml}${lineupHtml}</div>`;
 
   wrap.innerHTML = `<div style="background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid rgba(240,180,41,.45);border-radius:12px;padding:.85rem 1rem;">
     <div style="display:flex;align-items:center;gap:.6rem;justify-content:space-between;flex-wrap:wrap;margin-bottom:.45rem;">
       <div style="font-size:.72rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;">🎯 Fokus-Spiel</div>
-      <button class="lbtn" onclick="clearFocusedMatch()">✕ Fokus schließen</button>
+      ${viewSwitch}
     </div>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:center;">
       <div style="display:flex;align-items:center;gap:.45rem;"><span class="mflag">${hFlagImg}</span><span style="font-weight:800;">${escapeHtml(m.home)}</span></div>
@@ -4185,23 +4372,66 @@ function renderMatchFocus() {
       <div style="display:flex;align-items:center;gap:.45rem;justify-content:flex-end;text-align:right;"><span style="font-weight:800;">${escapeHtml(m.away)}</span><span class="mflag">${aFlagImg}</span></div>
     </div>
     <div class="minfo" style="margin-top:.45rem;font-size:.72rem;">📅 ${formatDate(m.date)} · 🕐 ${m.time.replace('+1','')} Uhr · 🏟️ ${escapeHtml(m.venue)} · ${escapeHtml(m.city)}</div>
-    ${focusTickerHtml}
-    ${lineupHtml}
+    ${detailHtml}
   </div>`;
 }
 
 function buildFocusedLiveTickerHtml(m) {
   const sc = liveScores[m.n];
   const feed = liveMatchFeed[m.n];
-  const items = feed?.items || [];
-  if (items.length) {
-    const row = items.map(s => escapeHtml(s)).join(' &nbsp;&nbsp; • &nbsp;&nbsp; ');
-    return `<div class="focus-live-ticker"><div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-track"><span>${row}</span><span aria-hidden="true">${row}</span></div></div>`;
+  const mode = uiSettings.focusedTickerMode === 'full' ? 'full' : 'highlights';
+  const items = mode === 'full' ? (feed?.fullItems || feed?.items || []) : (feed?.items || []);
+  const orderedItems = orderFeedItemsNewestFirst(items);
+  const modeSwitch = `<div class="focus-mode-switch">
+    <button class="lbtn focus-mode-btn ${mode === 'highlights' ? 'active-btn' : ''}" onclick="setUiSetting('focusedTickerMode','highlights')">Highlights</button>
+    <button class="lbtn focus-mode-btn ${mode === 'full' ? 'active-btn' : ''}" onclick="setUiSetting('focusedTickerMode','full')">Vollständig</button>
+  </div>`;
+  if (orderedItems.length) {
+    const list = orderedItems.map(s => `<div class="focus-live-item">${escapeHtml(s)}</div>`).join('');
+    const modeLabel = mode === 'full' ? 'VOLLSTÄNDIG' : 'HIGHLIGHTS';
+    return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker · ${modeLabel}</div><div class="focus-live-list">${list}</div></div>`;
   }
   if (sc?.live) {
-    return `<div class="focus-live-ticker"><div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-track"><span>Live-Spiel erkannt. Ereignisse werden geladen…</span><span aria-hidden="true">Live-Spiel erkannt. Ereignisse werden geladen…</span></div></div>`;
+    return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-list"><div class="focus-live-item">Live-Spiel erkannt. Ereignisse werden geladen…</div></div></div>`;
   }
-  return `<div class="focus-live-ticker"><div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-track"><span>Für dieses Spiel liegen aktuell keine Live-Ereignisse vor.</span><span aria-hidden="true">Für dieses Spiel liegen aktuell keine Live-Ereignisse vor.</span></div></div>`;
+  return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-list"><div class="focus-live-item">Für dieses Spiel liegen aktuell keine Live-Ereignisse vor.</div></div></div>`;
+}
+
+function buildFocusedLiveTickerMarqueeHtml(m) {
+  const sc = liveScores[m.n];
+  const feed = liveMatchFeed[m.n];
+  const mode = uiSettings.focusedTickerMode === 'full' ? 'full' : 'highlights';
+  const items = mode === 'full' ? (feed?.fullItems || feed?.items || []) : (feed?.items || []);
+  const orderedItems = orderFeedItemsNewestFirst(items);
+  const modeSwitch = `<div class="focus-mode-switch">
+    <button class="lbtn focus-mode-btn ${mode === 'highlights' ? 'active-btn' : ''}" onclick="setUiSetting('focusedTickerMode','highlights')">Highlights</button>
+    <button class="lbtn focus-mode-btn ${mode === 'full' ? 'active-btn' : ''}" onclick="setUiSetting('focusedTickerMode','full')">Vollständig</button>
+  </div>`;
+  if (orderedItems.length) {
+    const row = orderedItems.map(s => escapeHtml(s)).join(' &nbsp;&nbsp; • &nbsp;&nbsp; ');
+    const modeLabel = mode === 'full' ? 'VOLLSTÄNDIG' : 'HIGHLIGHTS';
+    return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker · ${modeLabel}</div><div class="focus-live-marquee-clip"><div class="focus-live-track"><span>${row}</span><span aria-hidden="true">${row}</span></div></div></div>`;
+  }
+  if (sc?.live) {
+    return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-marquee-clip"><div class="focus-live-track"><span>Live-Spiel erkannt. Ereignisse werden geladen…</span><span aria-hidden="true">Live-Spiel erkannt. Ereignisse werden geladen…</span></div></div></div>`;
+  }
+  return `<div class="focus-pane focus-live-ticker">${modeSwitch}<div class="focus-live-label">📡 Live-Ticker</div><div class="focus-live-marquee-clip"><div class="focus-live-track"><span>Für dieses Spiel liegen aktuell keine Live-Ereignisse vor.</span><span aria-hidden="true">Für dieses Spiel liegen aktuell keine Live-Ereignisse vor.</span></div></div></div>`;
+}
+
+function parseFeedMinute(item) {
+  const m = /^\s*(\d{1,3}):\d{2}/.exec(String(item || ''));
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function orderFeedItemsNewestFirst(items) {
+  const arr = Array.isArray(items) ? items.slice() : [];
+  if (arr.length < 2) return arr;
+  const first = parseFeedMinute(arr[0]);
+  const last = parseFeedMinute(arr[arr.length - 1]);
+  if (first !== null && last !== null && first < last) {
+    arr.reverse();
+  }
+  return arr;
 }
 
 // =====================================================================
@@ -4401,6 +4631,7 @@ function closeGroupModal(e){
   if (!overlay) return;
   if (!e || e === 'force' || e.target === overlay) {
     overlay.style.display='none';
+    currentOpenGroupLetter = null;
     if (lastFocusBeforeModal && typeof lastFocusBeforeModal.focus === 'function') {
       lastFocusBeforeModal.focus();
     }
@@ -4467,10 +4698,13 @@ function openSquadModal(teamName, evt) {
   renderSquadFavBtn(teamName);
 }
 
-function openGroupModal(letter){
+function openGroupModal(letter, preserveFocus){
   const g = GROUPS[letter];
   if(!g) return;
-  lastFocusBeforeModal = document.activeElement;
+  if (!preserveFocus) {
+    lastFocusBeforeModal = document.activeElement;
+  }
+  currentOpenGroupLetter = letter;
 
   // Header
   const head = document.getElementById('gmodal-head');
@@ -4479,32 +4713,49 @@ function openGroupModal(letter){
 
   // Tabelle
   const tbody = document.querySelector('#gmodal-table tbody');
-  tbody.innerHTML = g.teams.map((t,i)=>{
-    const posClass = i<2?'p12':i===2?'p3':'p4';
+  const standings = g.teams.map((t, idx) => {
     let sp=0,s=0,u=0,n=0,tf=0,tg=0;
     MATCHES.forEach(m=>{
-      if(m.group!==letter) return;
-      const ls = liveScores[m.num];
-      if(!ls||(!ls.live&&!ls.done)) return;
-      const isH=m.home===t.name, isA=m.away===t.name;
-      if(!isH&&!isA) return;
-      const gh=parseInt(ls.h)||0, ga=parseInt(ls.a)||0;
+      if (m.group !== letter) return;
+      const ls = liveScores[m.n];
+      if (!ls || (!ls.live && !ls.done)) return;
+      const isH = m.home === t.name;
+      const isA = m.away === t.name;
+      if (!isH && !isA) return;
+      const gh = parseInt(ls.h) || 0;
+      const ga = parseInt(ls.a) || 0;
       sp++;
-      tf+= isH?gh:ga; tg+= isH?ga:gh;
-      const myG=isH?gh:ga, opG=isH?ga:gh;
-      if(myG>opG)s++; else if(myG===opG)u++; else n++;
+      tf += isH ? gh : ga;
+      tg += isH ? ga : gh;
+      const myG = isH ? gh : ga;
+      const opG = isH ? ga : gh;
+      if (myG > opG) s++; else if (myG === opG) u++; else n++;
     });
-    const pts=s*3+u, td=tf-tg;
+    const pts = s*3 + u;
+    const td = tf - tg;
+    return { t, idx, sp, s, u, n, tf, tg, pts, td };
+  });
+
+  standings.sort((a,b) => {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.td !== a.td) return b.td - a.td;
+    if (b.tf !== a.tf) return b.tf - a.tf;
+    return a.idx - b.idx;
+  });
+
+  tbody.innerHTML = standings.map((row, i) => {
+    const t = row.t;
+    const posClass = i<2 ? 'p12' : i===2 ? 'p3' : 'p4';
     const safeN = t.name.replace(/'/g,"\\'");
     const hasSquad = SQUADS && SQUADS[t.name];
     const rowClass = hasSquad ? ' class="squad-row"' : '';
     const rowClick = hasSquad ? ` onclick="openSquadModal('${safeN}',event)"` : '';
     return `<tr${rowClass}${rowClick}>
       <td><div class="team-cell"><div class="tpos ${posClass}">${i+1}</div>${flagImg(t.flag, t.name)}${teamNameMarkup(t.name, t)}</div></td>
-      <td>${sp}</td><td>${s}</td><td>${u}</td><td>${n}</td>
-      <td>${tf}</td><td>${tg}</td>
-      <td class="${td>0?'gd-pos':td<0?'gd-neg':''}">${td>0?'+'+td:td}</td>
-      <td class="pts-cell">${pts}</td>
+      <td>${row.sp}</td><td>${row.s}</td><td>${row.u}</td><td>${row.n}</td>
+      <td>${row.tf}</td><td>${row.tg}</td>
+      <td class="${row.td>0?'gd-pos':row.td<0?'gd-neg':''}">${row.td>0?'+'+row.td:row.td}</td>
+      <td class="pts-cell">${row.pts}</td>
     </tr>`;
   }).join('');
 
@@ -4534,8 +4785,16 @@ function openGroupModal(letter){
     }).join('');
 
   document.getElementById('gmodal-overlay').style.display='flex';
-  const closeBtn = document.getElementById('gmodal-close-btn');
-  if (closeBtn) closeBtn.focus();
+  if (!preserveFocus) {
+    const closeBtn = document.getElementById('gmodal-close-btn');
+    if (closeBtn) closeBtn.focus();
+  }
+}
+
+function refreshOpenGroupModal() {
+  const overlay = document.getElementById('gmodal-overlay');
+  if (!overlay || overlay.style.display === 'none' || !currentOpenGroupLetter) return;
+  openGroupModal(currentOpenGroupLetter, true);
 }
 
 // PWA Icon + Manifest
