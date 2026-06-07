@@ -2461,6 +2461,7 @@ const CONF_DATA = [
 // COUNTDOWN
 // =====================================================================
 let countdownTimer = null;
+let favTeam = null;
 const defaultUiSettings = {
   countdownFollowsFavorite: true,
   showFavoriteMenu: true,
@@ -2527,8 +2528,6 @@ function toggleGroupFilters() {
 // =====================================================================
 // FAVORITEN
 // =====================================================================
-let favTeam = null;
-
 function loadUiSettings() {
   try {
     const saved = JSON.parse(localStorage.getItem('wm26_ui_settings') || '{}');
@@ -3143,6 +3142,8 @@ function buildCleanSheets() {
 // =====================================================================
 function buildOverview() {
   const confList = document.getElementById('conf-list');
+  const debList = document.getElementById('debut-list');
+  if (!confList || !debList) return;
   CONF_DATA.forEach(c => {
     const pct = Math.round((c.num/48)*100);
     confList.innerHTML += `<div class="conf-item">
@@ -3151,7 +3152,6 @@ function buildOverview() {
       <span class="conf-num">${c.num}</span>
     </div>`;
   });
-  const debList = document.getElementById('debut-list');
   const debuts = [{n:'Curaçao',c:'cw'},{n:'Kap Verde',c:'cv'},{n:'Jordanien',c:'jo'},{n:'Usbekistan',c:'uz'}];
   debuts.forEach(d => {
     const flagImg = `<img src="https://flagcdn.com/24x18/${d.c}.png" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:5px;" loading="lazy" alt="">`;
@@ -3352,12 +3352,19 @@ function findMatchByTeams(hEN, aEN) {
 function loadCache() {
   try {
     const c = localStorage.getItem('wm2026_scores');
-    if (c) { const {data,ts}=JSON.parse(c); if(Date.now()-ts<300000){liveScores=data;return true;} }
-  } catch(e){}
-  return false;
+    liveScores = c ? JSON.parse(c) || {} : {};
+  } catch (e) {
+    liveScores = {};
+    console.warn('wm2026_scores konnte nicht geladen werden:', e);
+  }
 }
+
 function saveCache() {
-  try { localStorage.setItem('wm2026_scores', JSON.stringify({data:liveScores,ts:Date.now()})); } catch(e){}
+  try {
+    localStorage.setItem('wm2026_scores', JSON.stringify(liveScores));
+  } catch (e) {
+    console.warn('wm2026_scores konnte nicht gespeichert werden:', e);
+  }
 }
 
 async function fetchLiveData() {
@@ -3367,48 +3374,53 @@ async function fetchLiveData() {
   if (stEl) { stEl.textContent='Daten werden geladen…'; stEl.style.color='var(--text2)'; }
 
   try {
-    // Zeitraum: gestern, heute, morgen für laufende Turnierphase
-    const dates = [-1,0,1].map(offset=>{ const d=new Date(); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10).replace(/-/g,''); });
-    const fetches = dates.map(ds => fetch(`${ESPN_URL}?dates=${ds}`).then(r=>r.ok?r.json():null));
+    const dates = [-1,0,1].map(offset => { const d = new Date(); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10).replace(/-/g,''); });
+    const fetches = dates.map(ds => fetch(`${ESPN_URL}?dates=${ds}`).then(r => r.ok ? r.json() : null));
     const results = await Promise.allSettled(fetches);
 
     let found = 0;
-    results.forEach(r=>{
-      if(r.status!=='fulfilled'||!r.value?.events) return;
-      r.value.events.forEach(ev=>{
-        const comp = ev.competitions?.[0]; if(!comp) return;
-        const home = comp.competitors?.find(c=>c.homeAway==='home');
-        const away = comp.competitors?.find(c=>c.homeAway==='away');
-        if(!home||!away) return;
+    results.forEach(r => {
+      if (r.status !== 'fulfilled' || !r.value?.events) return;
+      r.value.events.forEach(ev => {
+        const comp = ev.competitions?.[0];
+        if (!comp) return;
+        const home = comp.competitors?.find(c => c.homeAway === 'home');
+        const away = comp.competitors?.find(c => c.homeAway === 'away');
+        if (!home || !away) return;
         const match = findMatchByTeams(home.team.displayName, away.team.displayName);
-        if(!match) return;
-        const st = ev.status?.type?.name||'';
+        if (!match) return;
+        const st = ev.status?.type?.name || '';
         const isLive = ['STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD'].includes(st);
-        const isDone = ev.status?.type?.completed===true;
+        const isDone = ev.status?.type?.completed === true;
         liveScores[match.n] = {
-          h: home.score!==undefined?parseInt(home.score):null,
-          a: away.score!==undefined?parseInt(away.score):null,
-          status: st, clock: ev.status?.displayClock||'', live:isLive, done:isDone
+          h: home.score !== undefined ? parseInt(home.score) : null,
+          a: away.score !== undefined ? parseInt(away.score) : null,
+          status: st,
+          clock: ev.status?.displayClock || '',
+          live: isLive,
+          done: isDone,
         };
         found++;
       });
     });
 
-    if(found>0) saveCache();
+    if (found > 0) saveCache();
     lastFetch = new Date();
-    if(dot) { dot.classList.add('on'); }
-    if(stEl) {
+    if (dot) dot.classList.add('on');
+    if (stEl) {
       const tournamentStarted = new Date() >= new Date('2026-06-11T19:00:00-06:00');
-      stEl.textContent = found>0 ? `✓ ${found} Spiel${found===1?'':'e'} aktualisiert` : tournamentStarted ? 'Keine laufenden Spiele' : `Turnier startet am 11. Juni 2026`;
+      stEl.textContent = found > 0 ? `✓ ${found} Spiel${found===1?'':'e'} aktualisiert` : tournamentStarted ? 'Keine laufenden Spiele' : 'Turnier startet am 11. Juni 2026';
       stEl.style.color = 'var(--green)';
     }
-    if(tsEl) tsEl.textContent = `Zuletzt: ${lastFetch.toLocaleTimeString('de-DE')}`;
+    if (tsEl) tsEl.textContent = `Zuletzt: ${lastFetch.toLocaleTimeString('de-DE')}`;
     renderMatches();
     buildBracket();
+    updateCountdown();
+    updateNextMatchWidget();
   } catch(err) {
     console.warn('ESPN API:', err);
-    if(dot) dot.classList.remove('on');
-    if(stEl) { stEl.textContent='⚠ API nicht erreichbar – lokaler Cache aktiv'; stEl.style.color='var(--gold)'; }
+    if (dot) dot.classList.remove('on');
+    if (stEl) { stEl.textContent='⚠ API nicht erreichbar – lokaler Cache aktiv'; stEl.style.color='var(--gold)'; }
   }
 }
 
@@ -3682,17 +3694,25 @@ function buildVenues() {
 // =====================================================================
 // INIT
 // =====================================================================
-buildOverview();
-buildGroups();
-buildVenues();
-buildBracket();
-buildClubStats();
-buildConfederations();
-patchEmojiFlags();
-initFavorite();
-initLiveData(); // startet renderMatches() + Auto-Refresh
-fetchStats();   // Statistiken laden
-updateNextMatchWidget();
+function safeInit(label, fn) {
+  try {
+    fn();
+  } catch (err) {
+    console.warn(`Init fehlgeschlagen: ${label}`, err);
+  }
+}
+
+safeInit('buildOverview', buildOverview);
+safeInit('buildGroups', buildGroups);
+safeInit('buildVenues', buildVenues);
+safeInit('buildBracket', buildBracket);
+safeInit('buildClubStats', buildClubStats);
+safeInit('buildConfederations', buildConfederations);
+safeInit('patchEmojiFlags', patchEmojiFlags);
+safeInit('initFavorite', initFavorite);
+safeInit('initLiveData', initLiveData); // startet renderMatches() + Auto-Refresh
+safeInit('fetchStats', fetchStats);   // Statistiken laden
+safeInit('updateNextMatchWidget', updateNextMatchWidget);
 
 let lastFocusBeforeModal = null;
 
