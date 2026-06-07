@@ -99,7 +99,7 @@ input:focus,
 input:focus-visible {
   outline:none;
   border-color:var(--gold) !important;
-  box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);
+  box-shadow:0 0 0 2px rgba(76,201,240,.4),0 0 0 6px rgba(76,201,240,.14);
 }
 
 /* ========= MAIN ========= */
@@ -180,7 +180,7 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .group-link{display:block;text-decoration:none;color:inherit;outline:none;cursor:pointer;}
 .group-link:focus .group-card,
 .group-link:focus-visible .group-card,
-.group-link:focus-within .group-card{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.35),0 0 0 6px rgba(240,180,41,.12);}
+.group-link:focus-within .group-card{border-color:var(--gold);box-shadow:0 0 0 2px rgba(76,201,240,.4),0 0 0 6px rgba(76,201,240,.14);}
 .group-head{padding:.7rem 1rem;font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.5rem;color:#000;}
 .gtable{width:100%;border-collapse:collapse;}
 .gtable th{
@@ -290,10 +290,11 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 /* ========= SCHEDULE ========= */
 .sched-filters{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.4rem;}
 .fbtn{
-  padding:.35rem .9rem;background:var(--bg3);border:1px solid var(--border);
-  border-radius:999px;color:var(--text2);font-size:.78rem;cursor:pointer;transition:all .2s;
+  padding:.45rem 1.2rem;border-radius:8px;font-size:.82rem;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s;
 }
-.fbtn:hover,.fbtn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.fbtn.active{background:rgba(240,180,41,.18);color:var(--gold);border-color:var(--gold);font-weight:800;}
+.fbtn:hover{border-color:rgba(240,180,41,.35);color:var(--text);}
 .fbtn.round-btn{border-radius:8px;}
 .sched-search{
   padding:.5rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;
@@ -4547,8 +4548,27 @@ safeInit('updateNextMatchWidget', updateNextMatchWidget);
 let lastFocusBeforeModal = null;
 
 // Back/ESC schliesst Modal auch auf TV-Browsern
+function isBackKey(evt) {
+  const key = evt?.key;
+  const code = evt?.keyCode;
+  return key === 'Escape' || key === 'Backspace' || key === 'GoBack' || key === 'BrowserBack' || key === 'Back' || code === 8 || code === 27 || code === 166 || code === 4 || code === 10009;
+}
+
+function focusAndActivateNavStep(step) {
+  const navBtns = Array.from(document.querySelectorAll('nav .nb'));
+  if (!navBtns.length) return false;
+  const active = document.querySelector('nav .nb.active') || navBtns[0];
+  const idx = Math.max(0, navBtns.indexOf(active));
+  const nextIdx = (idx + step + navBtns.length) % navBtns.length;
+  const next = navBtns[nextIdx];
+  if (!next) return false;
+  next.focus();
+  next.click();
+  return true;
+}
+
 document.addEventListener('keydown', evt => {
-  if (evt.key === 'Escape' || evt.key === 'Backspace') {
+  if (isBackKey(evt)) {
     const squadOverlay = document.getElementById('squad-overlay');
     if (squadOverlay && squadOverlay.style.display !== 'none') {
       evt.preventDefault();
@@ -4559,6 +4579,11 @@ document.addEventListener('keydown', evt => {
     if (overlay && overlay.style.display !== 'none') {
       evt.preventDefault();
       closeGroupModal('force');
+      return;
+    }
+    // Zurueck-Taste ohne offenes Modal: im App-Navigationsmenue einen Schritt zurueck.
+    if (focusAndActivateNavStep(-1)) {
+      evt.preventDefault();
     }
   }
 });
@@ -4581,6 +4606,25 @@ document.addEventListener('keydown', evt => {
     if (activeNav) activeNav.focus();
   }
 
+  function getFocusableInActiveTab() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return [];
+    return Array.from(activeTab.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'))
+      .filter(el => {
+        if (!el) return false;
+        if (el.closest('#gmodal-overlay') || el.closest('#squad-overlay')) return false;
+        return el.offsetParent !== null;
+      });
+  }
+
+  function shouldJumpToNavOnArrowUp(focused) {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab || !focused || !activeTab.contains(focused)) return true;
+    const focusables = getFocusableInActiveTab();
+    if (!focusables.length) return true;
+    return focusables[0] === focused;
+  }
+
   // Beim ersten Laden: Fokus auf aktiven Nav-Button setzen
   window.addEventListener('load', function() {
     const activeNav = document.querySelector('nav .nb.active');
@@ -4600,6 +4644,27 @@ document.addEventListener('keydown', evt => {
 
   document.addEventListener('keydown', function(e) {
     const focused = document.activeElement;
+    const key = e.key || '';
+
+    // Remote-Tasten fuer Kiosk/Fire TV: Play/Pause = Auto-Refresh, Vor/Zurueck = Tab vor/zurueck.
+    if (key === 'MediaPlayPause' || key === 'Play' || key === 'Pause') {
+      e.preventDefault();
+      toggleAutoRefresh();
+      return;
+    }
+    if (key === 'MediaTrackNext' || key === 'MediaFastForward' || key === 'Forward') {
+      if (focusAndActivateNavStep(1)) {
+        e.preventDefault();
+        return;
+      }
+    }
+    if (key === 'MediaTrackPrevious' || key === 'MediaRewind') {
+      if (focusAndActivateNavStep(-1)) {
+        e.preventDefault();
+        return;
+      }
+    }
+
     // Nicht in Input-Feldern eingreifen
     if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) return;
     // Nicht in offenen Modals eingreifen
@@ -4651,8 +4716,8 @@ document.addEventListener('keydown', evt => {
       }
     }
 
-    // Pfeil Hoch aus dem Inhalt heraus → zurück zur Nav
-    if (e.key === 'ArrowUp' && !inNav) {
+    // Pfeil Hoch springt nur dann in die Nav, wenn der Fokus bereits am oberen Rand des Tabs ist.
+    if (e.key === 'ArrowUp' && !inNav && shouldJumpToNavOnArrowUp(focused)) {
       const activeNav = document.querySelector('nav .nb.active');
       if (activeNav) { e.preventDefault(); activeNav.focus(); }
       return;
