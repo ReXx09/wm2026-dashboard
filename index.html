@@ -263,6 +263,10 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .fav-status{font-size:.75rem;color:var(--text2);line-height:1.5;}
 .fav-status strong{color:var(--gold);}
 .settings-menu{display:flex;flex-direction:column;gap:.75rem;}
+.settings-section{display:flex;flex-direction:column;gap:.5rem;padding:.65rem;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.02);}
+.settings-section-head{display:flex;flex-direction:column;gap:.15rem;padding:.1rem .15rem .25rem;}
+.settings-section-title{font-size:.8rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;}
+.settings-section-desc{font-size:.7rem;color:var(--text3);line-height:1.4;}
 .settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;}
 .setting-check{display:flex;align-items:flex-start;gap:.6rem;padding:.7rem .8rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;}
 .setting-check input{margin-top:.2rem;accent-color:var(--gold);}
@@ -2544,8 +2548,11 @@ const defaultUiSettings = {
   showNextMatchWidget: true,
   showFavoriteFilter: true,
   autoRefreshEnabled: true,
+  autoRefreshIntervalSec: 60,
   statsRefreshIntervalSec: 180,
   animationsEnabled: true,
+  fireTvDpadMode: 'smart',
+  fireTvBackForwardNav: true,
   searchAutoFocus: true,
   highlightFavoriteMatches: true,
   highlightFavoriteSearchResults: true,
@@ -2558,6 +2565,16 @@ function normalizeStatsRefreshIntervalSec(value) {
   const n = parseInt(value, 10);
   if (!Number.isFinite(n)) return defaultUiSettings.statsRefreshIntervalSec;
   return Math.min(900, Math.max(60, n));
+}
+
+function normalizeAutoRefreshIntervalSec(value) {
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n)) return defaultUiSettings.autoRefreshIntervalSec;
+  return Math.min(600, Math.max(30, n));
+}
+
+function normalizeFireTvDpadMode(value) {
+  return value === 'menu' ? 'menu' : 'smart';
 }
 
 function updateCountdown() {
@@ -2655,7 +2672,10 @@ function loadUiSettings() {
   try {
     const saved = JSON.parse(localStorage.getItem('wm26_ui_settings') || '{}');
     uiSettings = { ...defaultUiSettings, ...(saved && typeof saved === 'object' ? saved : {}) };
+    uiSettings.autoRefreshIntervalSec = normalizeAutoRefreshIntervalSec(uiSettings.autoRefreshIntervalSec);
     uiSettings.statsRefreshIntervalSec = normalizeStatsRefreshIntervalSec(uiSettings.statsRefreshIntervalSec);
+    uiSettings.fireTvDpadMode = normalizeFireTvDpadMode(uiSettings.fireTvDpadMode);
+    uiSettings.fireTvBackForwardNav = uiSettings.fireTvBackForwardNav !== false;
   } catch (e) {
     uiSettings = { ...defaultUiSettings };
     console.warn('wm26_ui_settings konnte nicht gelesen werden:', e);
@@ -2674,80 +2694,142 @@ function renderSettingsMenu() {
   const wrap = document.getElementById('settings-menu');
   if (!wrap) return;
   wrap.innerHTML = `
-    <div class="settings-grid">
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.countdownFollowsFavorite ? 'checked' : ''} onchange="setUiSetting('countdownFollowsFavorite', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Counter an Favorit koppeln</span>
-          <span class="setting-desc">Der Counter zeigt das nächste Spiel des gewählten Favoriten statt nur den Turnierstart.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.showFavoriteMenu ? 'checked' : ''} onchange="setUiSetting('showFavoriteMenu', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Favoriten-Menü anzeigen</span>
-          <span class="setting-desc">Blendet die Favoriten-Auswahl in der Übersicht ein oder aus.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.showNextMatchWidget ? 'checked' : ''} onchange="setUiSetting('showNextMatchWidget', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Nächstes-Spiel-Widget anzeigen</span>
-          <span class="setting-desc">Zeigt die kompakte Vorschau des nächsten Spiels in der Übersicht.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.showFavoriteFilter ? 'checked' : ''} onchange="setUiSetting('showFavoriteFilter', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Favoriten-Filter im Spielplan</span>
-          <span class="setting-desc">Blendet den „Mein Team“-Filter im Spielplan ein oder aus.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.autoRefreshEnabled ? 'checked' : ''} onchange="setUiSetting('autoRefreshEnabled', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Auto-Refresh für Live-Daten</span>
-          <span class="setting-desc">Holt Spielstände und Live-Updates automatisch in Intervallen nach.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <span class="setting-copy">
-          <span class="setting-title">Statistik-Intervall (sek.)</span>
-          <span class="setting-desc">Schonender Auto-Refresh für Statistikdaten. Bereich: 60 bis 900 Sekunden.</span>
-          <span class="setting-input">
-            <input type="number" min="60" max="900" step="10" value="${uiSettings.statsRefreshIntervalSec}" onchange="setUiSetting('statsRefreshIntervalSec', this.value)">
-            <span class="setting-desc">aktuell: ${Math.round(uiSettings.statsRefreshIntervalSec / 60)} min</span>
+    <div class="settings-section">
+      <div class="settings-section-head">
+        <span class="settings-section-title">Anzeige & Übersicht</span>
+        <span class="settings-section-desc">Layout und Sichtbarkeit zentraler Übersichts-Elemente.</span>
+      </div>
+      <div class="settings-grid">
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.countdownFollowsFavorite ? 'checked' : ''} onchange="setUiSetting('countdownFollowsFavorite', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Counter an Favorit koppeln</span>
+            <span class="setting-desc">Der Counter zeigt das nächste Spiel des gewählten Favoriten statt nur den Turnierstart.</span>
           </span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.animationsEnabled ? 'checked' : ''} onchange="setUiSetting('animationsEnabled', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Animationen aktiv</span>
-          <span class="setting-desc">Schaltet kleine Bewegungen und Puls-Effekte im Interface ein oder aus.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.searchAutoFocus ? 'checked' : ''} onchange="setUiSetting('searchAutoFocus', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Suche nach Tabwechsel fokussieren</span>
-          <span class="setting-desc">Springt beim Wechsel in die Suche direkt in das Eingabefeld.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.highlightFavoriteMatches ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteMatches', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Favoriten im Spielplan hervorheben</span>
-          <span class="setting-desc">Markiert Spiele mit deinem Favoriten farblich stärker in der Liste.</span>
-        </span>
-      </label>
-      <label class="setting-check">
-        <input type="checkbox" ${uiSettings.highlightFavoriteSearchResults ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteSearchResults', this.checked)">
-        <span class="setting-copy">
-          <span class="setting-title">Favoriten in der Teamsuche hervorheben</span>
-          <span class="setting-desc">Zeigt deinen Favoriten in Team-Suchergebnissen mit stärkerer Markierung.</span>
-        </span>
-      </label>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.showFavoriteMenu ? 'checked' : ''} onchange="setUiSetting('showFavoriteMenu', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Favoriten-Menü anzeigen</span>
+            <span class="setting-desc">Blendet die Favoriten-Auswahl in der Übersicht ein oder aus.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.showNextMatchWidget ? 'checked' : ''} onchange="setUiSetting('showNextMatchWidget', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Nächstes-Spiel-Widget anzeigen</span>
+            <span class="setting-desc">Zeigt die kompakte Vorschau des nächsten Spiels in der Übersicht.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.animationsEnabled ? 'checked' : ''} onchange="setUiSetting('animationsEnabled', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Animationen aktiv</span>
+            <span class="setting-desc">Schaltet kleine Bewegungen und Puls-Effekte im Interface ein oder aus.</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-head">
+        <span class="settings-section-title">Live & Statistik</span>
+        <span class="settings-section-desc">Automatische Aktualisierung und API-schonendes Statistik-Intervall.</span>
+      </div>
+      <div class="settings-grid">
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.autoRefreshEnabled ? 'checked' : ''} onchange="setUiSetting('autoRefreshEnabled', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Auto-Refresh für Live-Daten</span>
+            <span class="setting-desc">Holt Spielstände und Live-Updates automatisch in Intervallen nach.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <span class="setting-copy">
+            <span class="setting-title">Live-Intervall (sek.)</span>
+            <span class="setting-desc">Aktualisiert den Live-Scoreboard-Loop. Bereich: 30 bis 600 Sekunden.</span>
+            <span class="setting-input">
+              <input type="number" min="30" max="600" step="10" value="${uiSettings.autoRefreshIntervalSec}" onchange="setUiSetting('autoRefreshIntervalSec', this.value)">
+              <span class="setting-desc">aktuell: ${uiSettings.autoRefreshIntervalSec} sek</span>
+            </span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <span class="setting-copy">
+            <span class="setting-title">Statistik-Intervall (sek.)</span>
+            <span class="setting-desc">Schonender Auto-Refresh für Statistikdaten. Bereich: 60 bis 900 Sekunden.</span>
+            <span class="setting-input">
+              <input type="number" min="60" max="900" step="10" value="${uiSettings.statsRefreshIntervalSec}" onchange="setUiSetting('statsRefreshIntervalSec', this.value)">
+              <span class="setting-desc">aktuell: ${Math.round(uiSettings.statsRefreshIntervalSec / 60)} min</span>
+            </span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-head">
+        <span class="settings-section-title">Fire TV Fernbedienung</span>
+        <span class="settings-section-desc">Steuert, wie D-Pad sowie Vor/Zurück im Kiosk-Modus reagieren.</span>
+      </div>
+      <div class="settings-grid">
+        <label class="setting-check">
+          <span class="setting-copy">
+            <span class="setting-title">Fire TV D-Pad Modus</span>
+            <span class="setting-desc">Smart = bereichsübergreifende Navigation. Menü = D-Pad nur in Menüzeilen/Nav.</span>
+            <span class="setting-input">
+              <select class="fav-select" style="min-width:190px;max-width:230px;padding:.32rem .45rem;font-size:.78rem;" onchange="setUiSetting('fireTvDpadMode', this.value)">
+                <option value="smart" ${uiSettings.fireTvDpadMode === 'smart' ? 'selected' : ''}>Smart (empfohlen)</option>
+                <option value="menu" ${uiSettings.fireTvDpadMode === 'menu' ? 'selected' : ''}>Nur Menüzeilen</option>
+              </select>
+            </span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.fireTvBackForwardNav ? 'checked' : ''} onchange="setUiSetting('fireTvBackForwardNav', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Vor/Zurück steuert Nav-Leiste</span>
+            <span class="setting-desc">Nutze Fernbedienungs-Tasten für Tabwechsel in der oberen Navigation.</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-head">
+        <span class="settings-section-title">Suche & Favoriten</span>
+        <span class="settings-section-desc">Filter, Fokusverhalten und Hervorhebungen für schnellere Navigation.</span>
+      </div>
+      <div class="settings-grid">
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.showFavoriteFilter ? 'checked' : ''} onchange="setUiSetting('showFavoriteFilter', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Favoriten-Filter im Spielplan</span>
+            <span class="setting-desc">Blendet den „Mein Team“-Filter im Spielplan ein oder aus.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.searchAutoFocus ? 'checked' : ''} onchange="setUiSetting('searchAutoFocus', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Suche nach Tabwechsel fokussieren</span>
+            <span class="setting-desc">Springt beim Wechsel in die Suche direkt in das Eingabefeld.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.highlightFavoriteMatches ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteMatches', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Favoriten im Spielplan hervorheben</span>
+            <span class="setting-desc">Markiert Spiele mit deinem Favoriten farblich stärker in der Liste.</span>
+          </span>
+        </label>
+        <label class="setting-check">
+          <input type="checkbox" ${uiSettings.highlightFavoriteSearchResults ? 'checked' : ''} onchange="setUiSetting('highlightFavoriteSearchResults', this.checked)">
+          <span class="setting-copy">
+            <span class="setting-title">Favoriten in der Teamsuche hervorheben</span>
+            <span class="setting-desc">Zeigt deinen Favoriten in Team-Suchergebnissen mit stärkerer Markierung.</span>
+          </span>
+        </label>
+      </div>
     </div>
     <div class="settings-foot">Alle Einstellungen werden lokal im Browser gespeichert.</div>
   `;
@@ -2770,8 +2852,14 @@ function applyUiSettings() {
 }
 
 function setUiSetting(key, value) {
+  if (key === 'autoRefreshIntervalSec') {
+    value = normalizeAutoRefreshIntervalSec(value);
+  }
   if (key === 'statsRefreshIntervalSec') {
     value = normalizeStatsRefreshIntervalSec(value);
+  }
+  if (key === 'fireTvDpadMode') {
+    value = normalizeFireTvDpadMode(value);
   }
   uiSettings[key] = value;
   saveUiSettings();
@@ -2795,6 +2883,10 @@ function setUiSetting(key, value) {
   if (key === 'statsRefreshIntervalSec') {
     resetAutoRefreshTimers();
     if (uiSettings.autoRefreshEnabled) fetchStats();
+  }
+  if (key === 'autoRefreshIntervalSec') {
+    resetAutoRefreshTimers();
+    if (uiSettings.autoRefreshEnabled) fetchLiveData();
   }
   if (key === 'focusedTickerMode' || key === 'focusViewVariant') {
     renderMatchFocus();
@@ -4054,6 +4146,10 @@ function getStatsRefreshIntervalMs() {
   return normalizeStatsRefreshIntervalSec(uiSettings.statsRefreshIntervalSec) * 1000;
 }
 
+function getLiveRefreshIntervalMs() {
+  return normalizeAutoRefreshIntervalSec(uiSettings.autoRefreshIntervalSec) * 1000;
+}
+
 function renderStatsIntervalHint() {
   const hint = document.getElementById('stats-interval-hint');
   if (!hint) return;
@@ -4069,7 +4165,7 @@ function resetAutoRefreshTimers() {
   clearInterval(statsTimer);
   statsTimer = null;
   if (!uiSettings.autoRefreshEnabled) return;
-  arTimer = setInterval(fetchLiveData, 60000);
+  arTimer = setInterval(fetchLiveData, getLiveRefreshIntervalMs());
   statsTimer = setInterval(fetchStats, getStatsRefreshIntervalMs());
 }
 
@@ -4596,7 +4692,7 @@ document.addEventListener('keydown', evt => {
       return;
     }
     // Zurueck-Taste ohne offenes Modal: im App-Navigationsmenue einen Schritt zurueck.
-    if (focusAndActivateNavStep(-1)) {
+    if (uiSettings.fireTvBackForwardNav !== false && focusAndActivateNavStep(-1)) {
       evt.preventDefault();
     }
   }
@@ -4762,6 +4858,8 @@ document.addEventListener('keydown', evt => {
   document.addEventListener('keydown', function(e) {
     const focused = document.activeElement;
     const key = e.key || '';
+    const menuOnlyMode = uiSettings.fireTvDpadMode === 'menu';
+    const allowBackForwardNav = uiSettings.fireTvBackForwardNav !== false;
 
     // Remote-Tasten fuer Kiosk/Fire TV: Play/Pause = Auto-Refresh, Vor/Zurueck = Tab vor/zurueck.
     if (key === 'MediaPlayPause' || key === 'Play' || key === 'Pause') {
@@ -4769,13 +4867,13 @@ document.addEventListener('keydown', evt => {
       toggleAutoRefresh();
       return;
     }
-    if (key === 'MediaTrackNext' || key === 'MediaFastForward' || key === 'Forward') {
+    if (allowBackForwardNav && (key === 'MediaTrackNext' || key === 'MediaFastForward' || key === 'Forward')) {
       if (focusAndActivateNavStep(1)) {
         e.preventDefault();
         return;
       }
     }
-    if (key === 'MediaTrackPrevious' || key === 'MediaRewind') {
+    if (allowBackForwardNav && (key === 'MediaTrackPrevious' || key === 'MediaRewind')) {
       if (focusAndActivateNavStep(-1)) {
         e.preventDefault();
         return;
@@ -4791,36 +4889,58 @@ document.addEventListener('keydown', evt => {
     const navBtns = Array.from(document.querySelectorAll('nav .nb'));
     const inNav = navBtns.includes(focused);
 
-    const verticalFocusTarget = e.key === 'ArrowUp'
-      ? getFocusMatchVerticalTarget(focused, 'up')
-      : e.key === 'ArrowDown'
-        ? getFocusMatchVerticalTarget(focused, 'down')
-        : null;
-    if (verticalFocusTarget) {
+    const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn,button.focus-mode-btn');
+
+    if (menuOnlyMode && !inNav && !isRowButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
       e.preventDefault();
-      verticalFocusTarget.focus();
+      return;
+    }
+    if (menuOnlyMode && !inNav && isRowButton && e.key === 'ArrowUp') {
+      const activeNav = document.querySelector('nav .nb.active');
+      if (activeNav) {
+        e.preventDefault();
+        activeNav.focus();
+        return;
+      }
+    }
+    if (menuOnlyMode && !inNav && isRowButton && e.key === 'ArrowDown') {
+      e.preventDefault();
       return;
     }
 
-    const overviewDirectionalTarget = e.key === 'ArrowLeft'
-      ? getOverviewDirectionalTarget(focused, 'left')
-      : e.key === 'ArrowRight'
-        ? getOverviewDirectionalTarget(focused, 'right')
-        : e.key === 'ArrowUp'
-          ? getOverviewDirectionalTarget(focused, 'up')
-          : e.key === 'ArrowDown'
-            ? getOverviewDirectionalTarget(focused, 'down')
-            : null;
-    if (overviewDirectionalTarget) {
-      e.preventDefault();
-      overviewDirectionalTarget.focus();
-      return;
+    if (!menuOnlyMode) {
+      const verticalFocusTarget = e.key === 'ArrowUp'
+        ? getFocusMatchVerticalTarget(focused, 'up')
+        : e.key === 'ArrowDown'
+          ? getFocusMatchVerticalTarget(focused, 'down')
+          : null;
+      if (verticalFocusTarget) {
+        e.preventDefault();
+        verticalFocusTarget.focus();
+        return;
+      }
     }
 
-    const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn');
+    if (!menuOnlyMode) {
+      const overviewDirectionalTarget = e.key === 'ArrowLeft'
+        ? getOverviewDirectionalTarget(focused, 'left')
+        : e.key === 'ArrowRight'
+          ? getOverviewDirectionalTarget(focused, 'right')
+          : e.key === 'ArrowUp'
+            ? getOverviewDirectionalTarget(focused, 'up')
+            : e.key === 'ArrowDown'
+              ? getOverviewDirectionalTarget(focused, 'down')
+              : null;
+      if (overviewDirectionalTarget) {
+        e.preventDefault();
+        overviewDirectionalTarget.focus();
+        return;
+      }
+    }
+
     if (!inNav && isRowButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       const row = focused.parentElement;
-      const rowBtns = row ? Array.from(row.querySelectorAll('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn')) : [];
+      const rowBtns = row ? Array.from(row.querySelectorAll('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn,button.focus-mode-btn')) : [];
       const idx = rowBtns.indexOf(focused);
       if (idx !== -1) {
         const nextIdx = e.key === 'ArrowRight'
@@ -4837,7 +4957,7 @@ document.addEventListener('keydown', evt => {
     }
 
     const isSearchRowBtn = focused && focused.matches && focused.matches('button.search-row-btn');
-    if (!inNav && isSearchRowBtn && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+    if (!menuOnlyMode && !inNav && isSearchRowBtn && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
       const activeTab = document.querySelector('.tab.active');
       if (activeTab && activeTab.id === 'tab-search') {
         const rows = Array.from(activeTab.querySelectorAll('.search-team-row'));
@@ -4860,7 +4980,7 @@ document.addEventListener('keydown', evt => {
     }
 
     // Pfeil Hoch springt nur dann in die Nav, wenn der Fokus bereits am oberen Rand des Tabs ist.
-    if (e.key === 'ArrowUp' && !inNav && shouldJumpToNavOnArrowUp(focused)) {
+    if (!menuOnlyMode && e.key === 'ArrowUp' && !inNav && shouldJumpToNavOnArrowUp(focused)) {
       const activeNav = document.querySelector('nav .nb.active');
       if (activeNav) { e.preventDefault(); activeNav.focus(); }
       return;
