@@ -139,6 +139,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .stat-c:hover{transform:translateY(-3px);border-color:rgba(240,180,41,.4);}
 .stat-c.clickable{cursor:pointer;}
 .stat-c.clickable:focus,.ov-link-card:focus{outline:none;border-color:rgba(240,180,41,.55);box-shadow:0 0 0 2px rgba(240,180,41,.2);}
+.overview-focusable{outline:none;transition:border-color .2s,transform .2s,box-shadow .2s,background .2s;}
+.overview-focusable:focus,.overview-focusable:focus-visible{border-color:rgba(76,201,240,.55) !important;box-shadow:0 0 0 2px rgba(76,201,240,.22),0 10px 24px rgba(0,0,0,.18);transform:translateY(-2px);}
 .ov-link-card{cursor:pointer;transition:border-color .2s,transform .2s;}
 .ov-link-card:hover{transform:translateY(-2px);border-color:rgba(240,180,41,.35);}
 .stat-icon{font-size:2rem;margin-bottom:.5rem;}
@@ -566,12 +568,12 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
   <!-- ====== OVERVIEW TAB ====== -->
   <div class="tab active" id="tab-overview">
     <div class="ov-stats">
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('groups')" onkeydown="handleOverviewTileKey(event,'groups')"><div class="stat-icon">🌍</div><div class="stat-val">48</div><div class="stat-label">Mannschaften</div></div>
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">⚽</div><div class="stat-val">104</div><div class="stat-label">Spiele</div></div>
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🏟️</div><div class="stat-val">16</div><div class="stat-label">Stadien</div></div>
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🗺️</div><div class="stat-val">3</div><div class="stat-label">Gastgeberländer</div></div>
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🏙️</div><div class="stat-val">16</div><div class="stat-label">Austragungsorte</div></div>
-      <div class="stat-c clickable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">📅</div><div class="stat-val">39</div><div class="stat-label">Turniertage</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('groups')" onkeydown="handleOverviewTileKey(event,'groups')"><div class="stat-icon">🌍</div><div class="stat-val">48</div><div class="stat-label">Mannschaften</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">⚽</div><div class="stat-val">104</div><div class="stat-label">Spiele</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🏟️</div><div class="stat-val">16</div><div class="stat-label">Stadien</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🗺️</div><div class="stat-val">3</div><div class="stat-label">Gastgeberländer</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('venues')" onkeydown="handleOverviewTileKey(event,'venues')"><div class="stat-icon">🏙️</div><div class="stat-val">16</div><div class="stat-label">Austragungsorte</div></div>
+      <div class="stat-c clickable overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('schedule')" onkeydown="handleOverviewTileKey(event,'schedule')"><div class="stat-icon">📅</div><div class="stat-val">39</div><div class="stat-label">Turniertage</div></div>
     </div>
 
     <div class="highlights-ticker" aria-label="Highlights Ticker">
@@ -584,13 +586,13 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
     <div class="ov-two">
       <!-- Timeline -->
       <div class="ov-two-col">
-        <div class="card">
+        <div class="card overview-focusable" tabindex="0">
           <div class="sec-title">⏭ Nächstes Spiel</div>
           <div id="next-match-widget">
             <div class="fav-status">Wähle einen Favoriten, um hier das nächste Spiel dieses Teams zu sehen.</div>
           </div>
         </div>
-        <div class="card">
+        <div class="card overview-focusable" tabindex="0">
           <div class="sec-title">🗓️ Turnierkalender</div>
           <div class="timeline">
             <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">11.–27. Juni 2026</div><div class="tl-label">Gruppenphase</div><div class="tl-sub">12 Gruppen · 72 Spiele</div></div>
@@ -606,15 +608,15 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 
       <!-- Confederation Breakdown -->
       <div class="ov-two-col">
-        <div class="card ov-link-card" role="button" tabindex="0" onclick="openOverviewLink('confederations')" onkeydown="handleOverviewTileKey(event,'confederations')">
+        <div class="card ov-link-card overview-focusable" role="button" tabindex="0" onclick="openOverviewLink('confederations')" onkeydown="handleOverviewTileKey(event,'confederations')">
           <div class="sec-title">🌐 Kontinentalverbände</div>
           <div class="conf-list" id="conf-list"></div>
         </div>
-        <div class="card">
+        <div class="card overview-focusable" tabindex="0">
           <div class="sec-title">🆕 Debütanten 2026</div>
           <div id="debut-list" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
         </div>
-        <div class="card">
+        <div class="card overview-focusable" tabindex="0">
           <div class="sec-title">⚡ Eröffnungsspiele</div>
           <div style="display:flex;flex-direction:column;gap:.5rem;">
             <div style="background:linear-gradient(135deg,#1a0a2e,#0d1f4a);border:1px solid rgba(240,180,41,.3);border-radius:10px;padding:.7rem .9rem;">
@@ -640,12 +642,12 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
     <!-- Titelverteidiger -->
     <div class="sec-title">🥇 Fakten & Rekorde</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;">
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🏆 Titelverteidiger</div><div style="font-size:1rem;font-weight:700;">🇦🇷 Argentinien</div><div style="font-size:.75rem;color:var(--text2);">WM 2022 in Katar gewonnen</div></div>
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🏟️ Finale</div><div style="font-size:1rem;font-weight:700;">MetLife Stadium</div><div style="font-size:.75rem;color:var(--text2);">East Rutherford, New Jersey · 19. Juli</div></div>
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">⚽ Erweiterung</div><div style="font-size:1rem;font-weight:700;">48 Teams (war 32)</div><div style="font-size:.75rem;color:var(--text2);">Erstmals seit 1998 neues Format</div></div>
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🎵 Finale Halbzeitshow</div><div style="font-size:1rem;font-weight:700;">Madonna · Shakira · BTS</div><div style="font-size:.75rem;color:var(--text2);">Erste WM-Halbzeitshow überhaupt</div></div>
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🤖 Maskottchen</div><div style="font-size:1rem;font-weight:700;">Maple · Zayu · Clutch</div><div style="font-size:.75rem;color:var(--text2);">Repräsentieren Kanada, Mexiko & USA</div></div>
-      <div class="card-sm"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">⚽ Spielball</div><div style="font-size:1rem;font-weight:700;">Trionda (Adidas)</div><div style="font-size:.75rem;color:var(--text2);">In den Gastgeber-Nationalfarben</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🏆 Titelverteidiger</div><div style="font-size:1rem;font-weight:700;">🇦🇷 Argentinien</div><div style="font-size:.75rem;color:var(--text2);">WM 2022 in Katar gewonnen</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🏟️ Finale</div><div style="font-size:1rem;font-weight:700;">MetLife Stadium</div><div style="font-size:.75rem;color:var(--text2);">East Rutherford, New Jersey · 19. Juli</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">⚽ Erweiterung</div><div style="font-size:1rem;font-weight:700;">48 Teams (war 32)</div><div style="font-size:.75rem;color:var(--text2);">Erstmals seit 1998 neues Format</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🎵 Finale Halbzeitshow</div><div style="font-size:1rem;font-weight:700;">Madonna · Shakira · BTS</div><div style="font-size:.75rem;color:var(--text2);">Erste WM-Halbzeitshow überhaupt</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">🤖 Maskottchen</div><div style="font-size:1rem;font-weight:700;">Maple · Zayu · Clutch</div><div style="font-size:.75rem;color:var(--text2);">Repräsentieren Kanada, Mexiko & USA</div></div>
+      <div class="card-sm overview-focusable" tabindex="0"><div style="font-size:.7rem;color:var(--text2);margin-bottom:.3rem;">⚽ Spielball</div><div style="font-size:1rem;font-weight:700;">Trionda (Adidas)</div><div style="font-size:.75rem;color:var(--text2);">In den Gastgeber-Nationalfarben</div></div>
     </div>
 
 
@@ -4361,7 +4363,16 @@ function buildLineupInfoHtml(m, nowMs, expanded) {
   return '';
 }
 
-function setFocusedMatch(matchNum) {
+function focusFocusedMatchPanel() {
+  const preferred = document.querySelector('#match-focus-wrap .focus-header-actions .focus-mode-btn.active-btn')
+    || document.querySelector('#match-focus-wrap .focus-header-actions button')
+    || document.querySelector('#match-focus-wrap button');
+  if (preferred && typeof preferred.focus === 'function') {
+    preferred.focus();
+  }
+}
+
+function setFocusedMatch(matchNum, moveFocusToPanel = true) {
   focusedMatchNum = matchNum;
   ensureMockDataForFocusedMatch(matchNum);
   if (liveTestMode) {
@@ -4374,6 +4385,9 @@ function setFocusedMatch(matchNum) {
     setLiveTestButtonState();
   }
   renderMatches();
+  if (moveFocusToPanel) {
+    requestAnimationFrame(() => focusFocusedMatchPanel());
+  }
 }
 
 function clearFocusedMatch() {
@@ -4606,6 +4620,44 @@ document.addEventListener('keydown', evt => {
     if (activeNav) activeNav.focus();
   }
 
+  function getScrollAnchor(el) {
+    if (!el || !el.closest) return el;
+    return el.closest('.match-card,.match-focus-wrap,.focus-pane,.search-team-row,.stats-section,.group-card,.card,.card-sm,.gm-match,.player-row,.team-stat-row,.venue-card,.bracket-match') || el;
+  }
+
+  function centerContentFocusInView(el) {
+    const anchor = getScrollAnchor(el);
+    if (!anchor || !anchor.getBoundingClientRect) return;
+    if (anchor.closest('nav') || anchor.closest('#gmodal-overlay') || anchor.closest('#squad-overlay')) return;
+    const rect = anchor.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    if (!viewportHeight) return;
+
+    const stickyTop = document.getElementById('sticky-top');
+    const stickyHeight = stickyTop ? stickyTop.getBoundingClientRect().height : 0;
+    const safeTop = stickyHeight + 18;
+    const safeBottom = 24;
+    const usableHeight = Math.max(120, viewportHeight - safeTop - safeBottom);
+    const targetCenter = safeTop + (usableHeight * 0.5);
+    const upperTrigger = safeTop + (usableHeight * 0.2);
+    const lowerTrigger = safeTop + (usableHeight * 0.8);
+
+    if (rect.top >= upperTrigger && rect.bottom <= lowerTrigger) return;
+
+    const anchorCenter = rect.top + (rect.height / 2);
+    const targetTop = window.scrollY + (anchorCenter - targetCenter);
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' });
+  }
+
+  document.addEventListener('focusin', function(e) {
+    const target = e.target;
+    if (!target || target === document.body || target === document.documentElement) return;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.closest('main')) return;
+    if (target.closest('nav') || target.closest('#gmodal-overlay') || target.closest('#squad-overlay')) return;
+    requestAnimationFrame(() => centerContentFocusInView(target));
+  });
+
   function getFocusableInActiveTab() {
     const activeTab = document.querySelector('.tab.active');
     if (!activeTab) return [];
@@ -4623,6 +4675,60 @@ document.addEventListener('keydown', evt => {
     const focusables = getFocusableInActiveTab();
     if (!focusables.length) return true;
     return focusables[0] === focused;
+  }
+
+  function getFocusMatchVerticalTarget(focused, direction) {
+    if (!focused || !focused.closest || !focused.closest('#match-focus-wrap')) return null;
+    const headerActions = Array.from(document.querySelectorAll('#match-focus-wrap .focus-header-actions button'));
+    const tickerSwitch = focused.closest('.focus-pane')?.querySelector('.focus-mode-switch');
+    const tickerButtons = tickerSwitch ? Array.from(tickerSwitch.querySelectorAll('button')) : [];
+    const inHeader = headerActions.includes(focused);
+    const inTicker = tickerButtons.includes(focused);
+
+    if (direction === 'up' && inTicker && headerActions.length) {
+      const idx = Math.min(tickerButtons.indexOf(focused), headerActions.length - 1);
+      return headerActions[Math.max(0, idx)] || headerActions[0];
+    }
+
+    if (direction === 'down' && inHeader && tickerButtons.length) {
+      const idx = Math.min(headerActions.indexOf(focused), tickerButtons.length - 1);
+      return tickerButtons[Math.max(0, idx)] || tickerButtons[0];
+    }
+
+    return null;
+  }
+
+  function getOverviewDirectionalTarget(focused, direction) {
+    if (!focused || !focused.closest || !focused.closest('#tab-overview')) return null;
+    const items = Array.from(document.querySelectorAll('#tab-overview .overview-focusable'));
+    if (!items.includes(focused)) return null;
+    const currentRect = focused.getBoundingClientRect();
+    const currentCx = currentRect.left + (currentRect.width / 2);
+    const currentCy = currentRect.top + (currentRect.height / 2);
+    let best = null;
+
+    items.forEach(item => {
+      if (item === focused) return;
+      const rect = item.getBoundingClientRect();
+      const cx = rect.left + (rect.width / 2);
+      const cy = rect.top + (rect.height / 2);
+      const dx = cx - currentCx;
+      const dy = cy - currentCy;
+
+      if (direction === 'left' && dx >= -8) return;
+      if (direction === 'right' && dx <= 8) return;
+      if (direction === 'up' && dy >= -8) return;
+      if (direction === 'down' && dy <= 8) return;
+
+      const primary = (direction === 'left' || direction === 'right') ? Math.abs(dx) : Math.abs(dy);
+      const secondary = (direction === 'left' || direction === 'right') ? Math.abs(dy) : Math.abs(dx);
+      const score = primary + (secondary * 0.35);
+      if (!best || score < best.score) {
+        best = { item, score };
+      }
+    });
+
+    return best ? best.item : null;
   }
 
   // Beim ersten Laden: Fokus auf aktiven Nav-Button setzen
@@ -4673,6 +4779,32 @@ document.addEventListener('keydown', evt => {
 
     const navBtns = Array.from(document.querySelectorAll('nav .nb'));
     const inNav = navBtns.includes(focused);
+
+    const verticalFocusTarget = e.key === 'ArrowUp'
+      ? getFocusMatchVerticalTarget(focused, 'up')
+      : e.key === 'ArrowDown'
+        ? getFocusMatchVerticalTarget(focused, 'down')
+        : null;
+    if (verticalFocusTarget) {
+      e.preventDefault();
+      verticalFocusTarget.focus();
+      return;
+    }
+
+    const overviewDirectionalTarget = e.key === 'ArrowLeft'
+      ? getOverviewDirectionalTarget(focused, 'left')
+      : e.key === 'ArrowRight'
+        ? getOverviewDirectionalTarget(focused, 'right')
+        : e.key === 'ArrowUp'
+          ? getOverviewDirectionalTarget(focused, 'up')
+          : e.key === 'ArrowDown'
+            ? getOverviewDirectionalTarget(focused, 'down')
+            : null;
+    if (overviewDirectionalTarget) {
+      e.preventDefault();
+      overviewDirectionalTarget.focus();
+      return;
+    }
 
     const isRowButton = focused && focused.matches && focused.matches('button.fbtn,button.stab,button.stab-main,button.stab-cat,button.search-row-btn');
     if (!inNav && isRowButton && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
