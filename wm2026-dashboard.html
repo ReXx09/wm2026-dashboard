@@ -267,6 +267,8 @@ main{max-width:1400px;margin:0 auto;padding:2rem;}
 .setting-copy{display:flex;flex-direction:column;gap:.15rem;}
 .setting-title{font-size:.82rem;font-weight:800;color:var(--text);}
 .setting-desc{font-size:.72rem;color:var(--text2);line-height:1.45;}
+.setting-input{margin-top:.35rem;display:flex;align-items:center;gap:.45rem;}
+.setting-input input{width:92px;padding:.3rem .45rem;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.78rem;}
 .settings-foot{font-size:.72rem;color:var(--text3);line-height:1.5;}
 /* Team-Namen als Link im Gruppen-Bereich */
 a.team-name-link{color:inherit;text-decoration:none;cursor:pointer;}
@@ -1131,6 +1133,7 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
 
     <div style="margin-top:1rem;display:flex;align-items:center;gap:.75rem;">
       <span id="stats-last-update" style="font-size:.73rem;color:var(--text3);">Noch nicht geladen</span>
+      <span id="stats-interval-hint" style="font-size:.73rem;color:var(--text3);">Intervall: 3 min</span>
       <button class="lbtn" onclick="fetchStats()">🔄 Aktualisieren</button>
     </div>
   </div>
@@ -2538,6 +2541,7 @@ const defaultUiSettings = {
   showNextMatchWidget: true,
   showFavoriteFilter: true,
   autoRefreshEnabled: true,
+  statsRefreshIntervalSec: 180,
   animationsEnabled: true,
   searchAutoFocus: true,
   highlightFavoriteMatches: true,
@@ -2546,6 +2550,12 @@ const defaultUiSettings = {
   focusViewVariant: 'cards',
 };
 let uiSettings = { ...defaultUiSettings };
+
+function normalizeStatsRefreshIntervalSec(value) {
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n)) return defaultUiSettings.statsRefreshIntervalSec;
+  return Math.min(900, Math.max(60, n));
+}
 
 function updateCountdown() {
   const now = new Date().getTime();
@@ -2642,6 +2652,7 @@ function loadUiSettings() {
   try {
     const saved = JSON.parse(localStorage.getItem('wm26_ui_settings') || '{}');
     uiSettings = { ...defaultUiSettings, ...(saved && typeof saved === 'object' ? saved : {}) };
+    uiSettings.statsRefreshIntervalSec = normalizeStatsRefreshIntervalSec(uiSettings.statsRefreshIntervalSec);
   } catch (e) {
     uiSettings = { ...defaultUiSettings };
     console.warn('wm26_ui_settings konnte nicht gelesen werden:', e);
@@ -2697,6 +2708,16 @@ function renderSettingsMenu() {
         </span>
       </label>
       <label class="setting-check">
+        <span class="setting-copy">
+          <span class="setting-title">Statistik-Intervall (sek.)</span>
+          <span class="setting-desc">Schonender Auto-Refresh für Statistikdaten. Bereich: 60 bis 900 Sekunden.</span>
+          <span class="setting-input">
+            <input type="number" min="60" max="900" step="10" value="${uiSettings.statsRefreshIntervalSec}" onchange="setUiSetting('statsRefreshIntervalSec', this.value)">
+            <span class="setting-desc">aktuell: ${Math.round(uiSettings.statsRefreshIntervalSec / 60)} min</span>
+          </span>
+        </span>
+      </label>
+      <label class="setting-check">
         <input type="checkbox" ${uiSettings.animationsEnabled ? 'checked' : ''} onchange="setUiSetting('animationsEnabled', this.checked)">
         <span class="setting-copy">
           <span class="setting-title">Animationen aktiv</span>
@@ -2746,17 +2767,20 @@ function applyUiSettings() {
 }
 
 function setUiSetting(key, value) {
+  if (key === 'statsRefreshIntervalSec') {
+    value = normalizeStatsRefreshIntervalSec(value);
+  }
   uiSettings[key] = value;
   saveUiSettings();
   renderSettingsMenu();
   renderFavoriteMenu();
   applyUiSettings();
+  renderStatsIntervalHint();
   if (key === 'autoRefreshEnabled') {
-    clearInterval(arTimer);
-    arTimer = null;
+    resetAutoRefreshTimers();
     if (uiSettings.autoRefreshEnabled) {
-      arTimer = setInterval(fetchLiveData, 60000);
       fetchLiveData();
+      fetchStats();
     } else {
       const stEl = document.getElementById('live-status-text');
       if (stEl) {
@@ -2764,6 +2788,10 @@ function setUiSetting(key, value) {
         stEl.style.color = 'var(--text3)';
       }
     }
+  }
+  if (key === 'statsRefreshIntervalSec') {
+    resetAutoRefreshTimers();
+    if (uiSettings.autoRefreshEnabled) fetchStats();
   }
   if (key === 'focusedTickerMode' || key === 'focusViewVariant') {
     renderMatchFocus();
@@ -3572,6 +3600,7 @@ let highlightTickerItems = [];
 let lastFetch = null;
 let autoRefresh = true;
 let arTimer = null;
+let statsTimer = null;
 let liveTestMode = false;
 let liveTestSnapshot = null;
 
@@ -4018,15 +4047,40 @@ function toggleAutoRefresh() {
   setUiSetting('autoRefreshEnabled', !uiSettings.autoRefreshEnabled);
 }
 
+function getStatsRefreshIntervalMs() {
+  return normalizeStatsRefreshIntervalSec(uiSettings.statsRefreshIntervalSec) * 1000;
+}
+
+function renderStatsIntervalHint() {
+  const hint = document.getElementById('stats-interval-hint');
+  if (!hint) return;
+  const sec = normalizeStatsRefreshIntervalSec(uiSettings.statsRefreshIntervalSec);
+  const min = Math.round(sec / 60);
+  const state = uiSettings.autoRefreshEnabled ? 'Auto' : 'Pausiert';
+  hint.textContent = `Intervall: ${min} min (${state})`;
+}
+
+function resetAutoRefreshTimers() {
+  clearInterval(arTimer);
+  arTimer = null;
+  clearInterval(statsTimer);
+  statsTimer = null;
+  if (!uiSettings.autoRefreshEnabled) return;
+  arTimer = setInterval(fetchLiveData, 60000);
+  statsTimer = setInterval(fetchStats, getStatsRefreshIntervalMs());
+}
+
 function initLiveData() {
   loadUiSettings();
   loadCache();
   switchSearchPanel('search', document.getElementById('search-panel-search-btn'));
   highlightTickerItems = buildHighlightsTickerItems();
   renderHighlightsTicker();
+  renderStatsIntervalHint();
   setLiveTestButtonState();
   fetchLiveData();
-  if (uiSettings.autoRefreshEnabled) arTimer = setInterval(fetchLiveData, 60000);
+  fetchStats();
+  resetAutoRefreshTimers();
 }
 
 // =====================================================================
