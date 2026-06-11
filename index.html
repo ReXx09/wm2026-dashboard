@@ -3992,6 +3992,55 @@ function parseLineupNames(entry) {
   return Array.from(new Set(names));
 }
 
+function parseLineupsFromBoxscorePlayers(data, match) {
+  const blocks = Array.isArray(data?.boxscore?.players) ? data.boxscore.players : [];
+  if (!blocks.length) return null;
+
+  const parsed = blocks.map(block => {
+    const team = toDE(block?.team?.displayName || block?.team?.shortDisplayName || block?.team?.name || '');
+    const groups = [];
+    if (Array.isArray(block?.athletes)) groups.push(...block.athletes);
+    if (Array.isArray(block?.players)) groups.push(...block.players);
+    if (Array.isArray(block?.statistics)) {
+      block.statistics.forEach(s => {
+        if (Array.isArray(s?.athletes)) groups.push(...s.athletes);
+        if (Array.isArray(s?.players)) groups.push(...s.players);
+        if (Array.isArray(s?.items)) groups.push(...s.items);
+      });
+    }
+
+    const starters = [];
+    const all = [];
+    groups.forEach(p => {
+      const n = p?.athlete?.displayName || p?.displayName || p?.name || p?.shortName;
+      if (!n) return;
+      const dn = toDE(n);
+      all.push(dn);
+      const isStarter = p?.starter === true || p?.isStarter === true || p?.substitute === false || p?.subbedOut === false;
+      if (isStarter) starters.push(dn);
+    });
+
+    const uniqueStarters = Array.from(new Set(starters));
+    const uniqueAll = Array.from(new Set(all));
+    const names = uniqueStarters.length ? uniqueStarters : uniqueAll.slice(0, 11);
+    return { team, names };
+  }).filter(x => x.names && x.names.length);
+
+  if (!parsed.length) return null;
+  let home = parsed.find(p => p.team === match.home)?.names || [];
+  let away = parsed.find(p => p.team === match.away)?.names || [];
+  if (!home.length && parsed[0]) home = parsed[0].names;
+  if (!away.length && parsed[1]) away = parsed[1].names;
+  if (!home.length && !away.length) return null;
+
+  return {
+    status: 'available',
+    home,
+    away,
+    checkedAt: Date.now(),
+  };
+}
+
 function parseLineupsFromSummary(data, match) {
   const blocks = [];
   if (Array.isArray(data?.lineups)) blocks.push(...data.lineups);
@@ -4007,6 +4056,10 @@ function parseLineupsFromSummary(data, match) {
   if (!home.length && parsed[0]) home = parsed[0].names;
   if (!away.length && parsed[1]) away = parsed[1].names;
 
+  if (!home.length && !away.length) {
+    return parseLineupsFromBoxscorePlayers(data, match);
+  }
+
   return {
     status: (home.length || away.length) ? 'available' : 'pending',
     home,
@@ -4018,7 +4071,7 @@ function parseLineupsFromSummary(data, match) {
 function shouldRefreshLineup(matchNum, isLive) {
   const lu = liveLineups[matchNum];
   const feed = liveMatchFeed[matchNum];
-  const interval = isLive ? 120000 : 600000;
+  const interval = isLive ? 90000 : 240000;
   const lineupAge = Date.now() - (lu?.checkedAt || 0);
   const feedAge = Date.now() - (feed?.checkedAt || 0);
   const lineupNeedsRefresh = !lu || lu.status !== 'available' || lineupAge > interval;
@@ -4781,7 +4834,24 @@ document.addEventListener('keydown', evt => {
     if (!activeTab || !focused || !activeTab.contains(focused)) return true;
     const focusables = getFocusableInActiveTab();
     if (!focusables.length) return true;
-    return focusables[0] === focused;
+    const currentRect = focused.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
+    const topZone = tabRect.top + Math.max(72, Math.min(180, tabRect.height * 0.22));
+
+    // Nur bei Fokus nahe dem oberen Tab-Rand in die Navigation springen.
+    if (currentRect.top > topZone) return false;
+
+    const currentCx = currentRect.left + (currentRect.width / 2);
+    const hasAbove = focusables.some(el => {
+      if (el === focused) return false;
+      const r = el.getBoundingClientRect();
+      if (r.bottom > currentRect.top - 4) return false;
+      const cx = r.left + (r.width / 2);
+      return Math.abs(cx - currentCx) <= Math.max(220, currentRect.width * 1.6);
+    });
+
+    if (hasAbove) return false;
+    return true;
   }
 
   function getFocusMatchVerticalTarget(focused, direction) {
