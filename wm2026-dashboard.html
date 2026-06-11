@@ -3603,7 +3603,7 @@ function updateGroupLiveStandings() {
     const ls = liveScores[m.n];
     if (!ls || ls.h === null || ls.a === null) return;
     const h = ls.h, a = ls.a;
-    const done = ls.done || ls.live; // laufende oder beendete Spiele zählen
+    const done = ls.done || ls.live || ['STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_OVERTIME','STATUS_SHOOTOUT','STATUS_FINAL'].includes(ls.status); // laufende oder beendete Spiele zählen
     if (!done) return;
     [m.home, m.away].forEach(t => { if (!teamStats[t]) teamStats[t] = {sp:0,s:0,u:0,n:0,pts:0}; });
     teamStats[m.home].sp++;
@@ -4263,7 +4263,7 @@ async function fetchLiveData() {
         const match = findMatchByTeams(home.team.displayName, away.team.displayName);
         if (!match) return;
         const st = ev.status?.type?.name || '';
-        const isLive = ['STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD'].includes(st);
+        const isLive = ['STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_OVERTIME','STATUS_SHOOTOUT'].includes(st);
         const isDone = ev.status?.type?.completed === true;
         liveScores[match.n] = {
           h: home.score !== undefined ? parseInt(home.score) : null,
