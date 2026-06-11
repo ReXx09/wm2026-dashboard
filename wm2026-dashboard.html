@@ -4266,8 +4266,8 @@ async function fetchLiveData() {
         const isLive = ['STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_OVERTIME','STATUS_SHOOTOUT'].includes(st);
         const isDone = ev.status?.type?.completed === true;
         liveScores[match.n] = {
-          h: home.score !== undefined ? parseInt(home.score) : null,
-          a: away.score !== undefined ? parseInt(away.score) : null,
+          h: (home.score !== undefined && home.score !== '' && home.score !== null) ? parseInt(home.score) : null,
+          a: (away.score !== undefined && away.score !== '' && away.score !== null) ? parseInt(away.score) : null,
           status: st,
           clock: ev.status?.displayClock || '',
           live: isLive,
@@ -4344,6 +4344,7 @@ function initLiveData() {
   renderHighlightsTicker();
   renderStatsIntervalHint();
   setLiveTestButtonState();
+  renderMatches(); // sofort gecachete Daten zeigen
   fetchLiveData();
   fetchStats();
   resetAutoRefreshTimers();
