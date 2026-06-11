@@ -2579,7 +2579,7 @@ function normalizeFireTvDpadMode(value) {
 
 function updateCountdown() {
   const now = new Date().getTime();
-  const tournamentStart = new Date('2026-06-11T19:00:00-06:00').getTime();
+  const tournamentStart = (getMatchDateTime(MATCHES[0])?.getTime()) || new Date('2026-06-11T21:00:00').getTime();
   const nextFav = uiSettings.countdownFollowsFavorite && favTeam ? findUpcomingMatchForTeam(favTeam) : null;
   const target = nextFav ? nextFav.dt.getTime() : tournamentStart;
   const diff = target - now;
@@ -3678,8 +3678,8 @@ function findUpcomingMatchForTeam(teamName) {
 // =====================================================================
 // LIVE DATA SYSTEM (ESPN Public API – kein Key erforderlich)
 // =====================================================================
-const ESPN_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WC/scoreboard';
-const ESPN_SUMMARY_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WC/summary';
+const ESPN_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard';
+  const ESPN_SUMMARY_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/summary';
 
 // Deutsch → Englisch (für API-Abgleich)
 const TEAM_EN = {'Mexiko':'Mexico','Südafrika':'South Africa','Südkorea':'South Korea','Tschechien':'Czech Republic','Kanada':'Canada','Bosnien-Herzegowina':'Bosnia and Herzegovina','Katar':'Qatar','Schweiz':'Switzerland','Brasilien':'Brazil','Marokko':'Morocco','Haiti':'Haiti','Schottland':'Scotland','USA':'United States','Paraguay':'Paraguay','Australien':'Australia','Türkei':'Turkey','Deutschland':'Germany','Curaçao':'Curacao','Elfenbeinküste':'Ivory Coast','Ecuador':'Ecuador','Niederlande':'Netherlands','Japan':'Japan','Schweden':'Sweden','Tunesien':'Tunisia','Belgien':'Belgium','Ägypten':'Egypt','Iran':'Iran','Neuseeland':'New Zealand','Spanien':'Spain','Kap Verde':'Cape Verde','Saudi-Arabien':'Saudi Arabia','Uruguay':'Uruguay','Frankreich':'France','Senegal':'Senegal','Irak':'Iraq','Norwegen':'Norway','Argentinien':'Argentina','Algerien':'Algeria','Österreich':'Austria','Jordanien':'Jordan','Portugal':'Portugal','DR Kongo':'DR Congo','Usbekistan':'Uzbekistan','Kolumbien':'Colombia','England':'England','Kroatien':'Croatia','Ghana':'Ghana','Panama':'Panama'};
@@ -4238,8 +4238,8 @@ function initLiveData() {
 // =====================================================================
 // STATISTICS SYSTEM
 // =====================================================================
-const ESPN_STANDINGS = 'https://site.api.espn.com/apis/v2/sports/soccer/FIFA.WC/standings';
-const ESPN_LEADERS   = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WC/leaders';
+const ESPN_STANDINGS = 'https://site.api.espn.com/apis/v2/sports/soccer/FIFA.WORLD/standings';
+  const ESPN_LEADERS   = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/leaders';
 
 let activeStatSection = 'scorers';
 
