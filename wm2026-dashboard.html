@@ -3569,19 +3569,20 @@ function buildGroups() {
   Object.entries(GROUPS).forEach(([letter,g]) => {
     const teamsHTML = g.teams.map((t,i) => {
       const posClass = i < 2 ? 'p12' : i === 2 ? 'p3' : 'p4';
-      return `<tr>
+      const safeName = t.name.replace(/[^a-zA-Z0-9]/g,'_');
+      return `<tr data-team="${escapeHtml(t.name)}">
         <td><div class="team-cell">
           <div class="tpos ${posClass}">${i+1}</div>
           ${flagImg(t.flag, t.name)}
           ${teamNameMarkup(t.name, t, false)}
         </div></td>
-        <td>0</td><td>0</td><td>0</td><td>0</td>
-        <td class="pts-cell">0</td>
+        <td class="gs-sp">0</td><td class="gs-s">0</td><td class="gs-u">0</td><td class="gs-n">0</td>
+        <td class="pts-cell gs-pts">0</td>
       </tr>`;
     }).join('');
     grid.innerHTML += `<a href="#" class="group-link" aria-label="Gruppe ${letter} öffnen"
       onclick="handleGroupCardClick(event,'${letter}')">
-    <div class="group-card">
+    <div class="group-card" data-gletter="${letter}">
       <div class="group-head" style="background:${g.color};">⚽ Gruppe ${letter} <span style="margin-left:auto;font-size:.7rem;opacity:.75">▶ Details</span></div>
       <table class="gtable">
         <thead><tr>
@@ -3591,6 +3592,50 @@ function buildGroups() {
         <tbody>${teamsHTML}</tbody>
       </table>
     </div></a>`;
+  });
+}
+
+function updateGroupLiveStandings() {
+  // Berechne Tabellenstände aus liveScores
+  const teamStats = {}; // teamName -> {sp,s,u,n,pts}
+  MATCHES.forEach(m => {
+    if (m.phase !== 'Gruppenphase') return;
+    const ls = liveScores[m.n];
+    if (!ls || ls.h === null || ls.a === null) return;
+    const h = ls.h, a = ls.a;
+    const done = ls.done || ls.live; // laufende oder beendete Spiele zählen
+    if (!done) return;
+    [m.home, m.away].forEach(t => { if (!teamStats[t]) teamStats[t] = {sp:0,s:0,u:0,n:0,pts:0}; });
+    teamStats[m.home].sp++;
+    teamStats[m.away].sp++;
+    if (h > a) { teamStats[m.home].s++; teamStats[m.home].pts+=3; teamStats[m.away].n++; }
+    else if (h < a) { teamStats[m.away].s++; teamStats[m.away].pts+=3; teamStats[m.home].n++; }
+    else { teamStats[m.home].u++; teamStats[m.away].u++; teamStats[m.home].pts++; teamStats[m.away].pts++; }
+  });
+
+  // Update DOM
+  document.querySelectorAll('#groups-grid .group-card').forEach(card => {
+    const rows = Array.from(card.querySelectorAll('tbody tr[data-team]'));
+    const teamData = rows.map(row => {
+      const name = row.dataset.team;
+      return { row, name, stats: teamStats[name] || {sp:0,s:0,u:0,n:0,pts:0} };
+    });
+    // Sortierung: Punkte desc
+    teamData.sort((a,b) => b.stats.pts - a.stats.pts);
+    const tbody = card.querySelector('tbody');
+    teamData.forEach((td, i) => {
+      const posEl = td.row.querySelector('.tpos');
+      if (posEl) {
+        posEl.textContent = i+1;
+        posEl.className = 'tpos ' + (i<2?'p12':i===2?'p3':'p4');
+      }
+      td.row.querySelector('.gs-sp').textContent = td.stats.sp;
+      td.row.querySelector('.gs-s').textContent  = td.stats.s;
+      td.row.querySelector('.gs-u').textContent  = td.stats.u;
+      td.row.querySelector('.gs-n').textContent  = td.stats.n;
+      td.row.querySelector('.gs-pts').textContent= td.stats.pts;
+      tbody.appendChild(td.row); // re-sort rows
+    });
   });
 }
 
@@ -3956,11 +4001,64 @@ function parseRedCardsFromSummary(data, match) {
   return { home, away, checkedAt: Date.now() };
 }
 
+function translateCommentary(text) {
+  if (!text) return text;
+  let t = text;
+  // Spielphasen
+  t = t.replace(/\bFirst Half begins\b/gi, 'Erste Halbzeit beginnt');
+  t = t.replace(/\bSecond Half begins\b/gi, 'Zweite Halbzeit beginnt');
+  t = t.replace(/\bFirst Half ends\b/gi, 'Erste Halbzeit endet');
+  t = t.replace(/\bSecond Half ends\b/gi, 'Zweite Halbzeit endet');
+  t = t.replace(/\bHalf Time\b/gi, 'Halbzeitpause');
+  t = t.replace(/\bFull Time\b/gi, 'Abpfiff');
+  t = t.replace(/\bLineups are announced[^.]*\./gi, 'Aufstellungen veröffentlicht, Teams beim Aufwärmen.');
+  t = t.replace(/\bExtra Time\b/gi, 'Verlängerung');
+  t = t.replace(/\bPenalty Shootout\b/gi, 'Elfmeterschießen');
+  // Ereignisse
+  t = t.replace(/\bGoal!\s*/gi, 'TOR! ');
+  t = t.replace(/\bOwn Goal\b/gi, 'Eigentor');
+  t = t.replace(/\bPenalty Goal\b/gi, 'Elfmetertor');
+  t = t.replace(/\bMissed Penalty\b/gi, 'Elfmeter verschossen');
+  t = t.replace(/\bPenalty\b/gi, 'Elfmeter');
+  t = t.replace(/\bYellow Card\b/gi, 'Gelbe Karte');
+  t = t.replace(/\bRed Card\b/gi, 'Rote Karte');
+  t = t.replace(/\bYellow-Red Card\b/gi, 'Gelb-Rote Karte');
+  t = t.replace(/\bSubstitution\b/gi, 'Einwechslung');
+  t = t.replace(/\bFoul by\b/gi, 'Foul von');
+  t = t.replace(/\bCorner\b/gi, 'Ecke');
+  t = t.replace(/\bOffside\b/gi, 'Abseits');
+  t = t.replace(/\bFree [Kk]ick\b/gi, 'Freistoß');
+  t = t.replace(/\bAttempt (saved|blocked|missed)\b/gi, (m, r) => 'Schuss ' + ({saved:'gehalten',blocked:'geblockt',missed:'daneben'}[r.toLowerCase()] || r));
+  t = t.replace(/\bright footed shot\b/gi, 'Schuss mit rechts');
+  t = t.replace(/\bleft footed shot\b/gi, 'Schuss mit links');
+  t = t.replace(/\bheader\b/gi, 'Kopfball');
+  t = t.replace(/\bwins a free kick\b/gi, 'erkämpft Freistoß');
+  t = t.replace(/\bin the attacking half\b/gi, 'in der gegnerischen Hälfte');
+  t = t.replace(/\bin the defensive half\b/gi, 'in der eigenen Hälfte');
+  t = t.replace(/\bfrom (?:the )?centre of the box\b/gi, 'aus der Mitte des Strafraums');
+  t = t.replace(/\bfrom (?:the )?left side of the box\b/gi, 'von links im Strafraum');
+  t = t.replace(/\bfrom (?:the )?right side of the box\b/gi, 'von rechts im Strafraum');
+  t = t.replace(/\bfrom more than 35 yards\b/gi, 'aus über 30 Metern');
+  t = t.replace(/\bfrom outside the box\b/gi, 'von außerhalb des Strafraums');
+  t = t.replace(/\bAssisted by\b/gi, 'Vorlage von');
+  t = t.replace(/\bwith a cross\b/gi, 'mit einer Flanke');
+  t = t.replace(/\bwith a through ball\b/gi, 'mit einem Pass in die Tiefe');
+  t = t.replace(/\bfollowing a (set piece|corner)\b/gi, (m, r) => 'nach ' + (r==='corner'?'einer Ecke':'einem ruhenden Ball'));
+  t = t.replace(/\bsaved in the (bottom|top) (left|right) corner\b/gi, (m,v,h) => 'gehalten ' + (v==='bottom'?'unten':'oben') + ' ' + (h==='left'?'links':'rechts'));
+  t = t.replace(/\bsaved by\b/gi, 'gehalten von');
+  t = t.replace(/\bhits the (left|right)? ?post\b/gi, (m, s) => 'trifft den ' + (s==='left'?'linken':s==='right'?'rechten':'') + ' Pfosten');
+  t = t.replace(/\bhits the bar\b/gi, 'trifft die Latte');
+  // Teams in Klammern übersetzen
+  t = t.replace(/\(([^)]+)\)/g, (m, name) => '(' + toDE(name.trim()) + ')');
+  return t;
+}
+
 function normalizeFeedItem(item) {
   if (!item) return null;
   const clock = item?.clock?.displayValue || item?.displayClock || item?.time?.displayValue || item?.time || '';
   const team = toDE(item?.team?.displayName || item?.competitor?.team?.displayName || '');
-  const text = item?.text || item?.shortText || item?.headline || item?.type?.text || item?.description || '';
+  const rawText = item?.text || item?.shortText || item?.headline || item?.type?.text || item?.description || '';
+  const text = translateCommentary(rawText);
   if (!text) return null;
   const parts = [];
   if (clock) parts.push(clock);
@@ -4482,6 +4580,7 @@ function renderMatches() {
   });
   wrap.innerHTML = html;
   renderMatchFocus();
+  updateGroupLiveStandings();
 }
 
 function buildLineupInfoHtml(m, nowMs, expanded) {
