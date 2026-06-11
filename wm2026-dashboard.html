@@ -3685,7 +3685,7 @@ const ESPN_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORL
 const TEAM_EN = {'Mexiko':'Mexico','Südafrika':'South Africa','Südkorea':'South Korea','Tschechien':'Czech Republic','Kanada':'Canada','Bosnien-Herzegowina':'Bosnia and Herzegovina','Katar':'Qatar','Schweiz':'Switzerland','Brasilien':'Brazil','Marokko':'Morocco','Haiti':'Haiti','Schottland':'Scotland','USA':'United States','Paraguay':'Paraguay','Australien':'Australia','Türkei':'Turkey','Deutschland':'Germany','Curaçao':'Curacao','Elfenbeinküste':'Ivory Coast','Ecuador':'Ecuador','Niederlande':'Netherlands','Japan':'Japan','Schweden':'Sweden','Tunesien':'Tunisia','Belgien':'Belgium','Ägypten':'Egypt','Iran':'Iran','Neuseeland':'New Zealand','Spanien':'Spain','Kap Verde':'Cape Verde','Saudi-Arabien':'Saudi Arabia','Uruguay':'Uruguay','Frankreich':'France','Senegal':'Senegal','Irak':'Iraq','Norwegen':'Norway','Argentinien':'Argentina','Algerien':'Algeria','Österreich':'Austria','Jordanien':'Jordan','Portugal':'Portugal','DR Kongo':'DR Congo','Usbekistan':'Uzbekistan','Kolumbien':'Colombia','England':'England','Kroatien':'Croatia','Ghana':'Ghana','Panama':'Panama'};
 const TEAM_DE = {}; Object.entries(TEAM_EN).forEach(([d,e])=>TEAM_DE[e]=d);
 // Extra ESPN-Aliasse
-const ALIASES = {'Czech Republic':'Tschechien','Bosnia and Herzegovina':'Bosnien-Herzegowina','Ivory Coast':'Elfenbeinküste','United States':'USA','South Korea':'Südkorea','Cape Verde':'Kap Verde','Saudi Arabia':'Saudi-Arabien','New Zealand':'Neuseeland','DR Congo':'DR Kongo','Uzbekistan':'Usbekistan','Colombia':'Kolumbien','Croatia':'Kroatien','Australia':'Australien','Morocco':'Marokko','Brazil':'Brasilien','France':'Frankreich','Germany':'Deutschland','Netherlands':'Niederlande','Spain':'Spanien','Belgium':'Belgien','Switzerland':'Schweiz','Norway':'Norwegen','Tunisia':'Tunesien','Algeria':'Algerien','Austria':'Österreich','Jordan':'Jordanien','Portugal':'Portugal','Ecuador':'Ecuador','Argentina':'Argentinien','Iran':'Iran','Egypt':'Ägypten','Sweden':'Schweden','Japan':'Japan','Turkey':'Türkei','Curacao':'Curaçao','Qatar':'Katar','Canada':'Kanada','Mexico':'Mexiko','Scotland':'Schottland','Ghana':'Ghana','Panama':'Panama','Senegal':'Senegal','Iraq':'Irak','Uruguay':'Uruguay'};
+const ALIASES = {'Czech Republic':'Tschechien','Czechia':'Tschechien','Bosnia and Herzegovina':'Bosnien-Herzegowina','Ivory Coast':'Elfenbeinküste','United States':'USA','South Korea':'Südkorea','Cape Verde':'Kap Verde','Saudi Arabia':'Saudi-Arabien','New Zealand':'Neuseeland','DR Congo':'DR Kongo','Uzbekistan':'Usbekistan','Colombia':'Kolumbien','Croatia':'Kroatien','Australia':'Australien','Morocco':'Marokko','Brazil':'Brasilien','France':'Frankreich','Germany':'Deutschland','Netherlands':'Niederlande','Spain':'Spanien','Belgium':'Belgien','Switzerland':'Schweiz','Norway':'Norwegen','Tunisia':'Tunesien','Algeria':'Algerien','Austria':'Österreich','Jordan':'Jordanien','Portugal':'Portugal','Ecuador':'Ecuador','Argentina':'Argentinien','Iran':'Iran','Egypt':'Ägypten','Sweden':'Schweden','Japan':'Japan','Turkey':'Türkei','Curacao':'Curaçao','Qatar':'Katar','Canada':'Kanada','Mexico':'Mexiko','Scotland':'Schottland','Ghana':'Ghana','Panama':'Panama','Senegal':'Senegal','Iraq':'Irak','Uruguay':'Uruguay'};
 
 let liveScores = {}; // matchNum → {h,a,status,clock,live,done}
 let liveLineups = {}; // matchNum → {status, home[], away[], checkedAt}
@@ -3973,6 +3973,7 @@ function parseMatchFeedFromSummary(data) {
   const raw = [];
   if (Array.isArray(data?.keyEvents)) raw.push(...data.keyEvents);
   if (Array.isArray(data?.plays)) raw.push(...data.plays);
+  if (Array.isArray(data?.commentary)) raw.push(...data.commentary);
   const normalized = raw
     .map(normalizeFeedItem)
     .filter(Boolean)
@@ -3986,7 +3987,7 @@ function parseLineupNames(entry) {
   const raw = entry?.athletes || entry?.players || entry?.starters || entry?.items || [];
   const names = [];
   raw.forEach(p => {
-    const n = p?.athlete?.displayName || p?.displayName || p?.name || p?.shortName;
+    const n = p?.athlete?.displayName || p?.athlete?.shortName || p?.displayName || p?.name || p?.shortName;
     if (n) names.push(toDE(n));
   });
   return Array.from(new Set(names));
@@ -4045,6 +4046,21 @@ function parseLineupsFromSummary(data, match) {
   const blocks = [];
   if (Array.isArray(data?.lineups)) blocks.push(...data.lineups);
   if (Array.isArray(data?.boxscore?.lineups)) blocks.push(...data.boxscore.lineups);
+  // ESPN WM 2026: rosters statt lineups
+  if (Array.isArray(data?.rosters)) {
+    data.rosters.forEach(r => {
+      if (!Array.isArray(r?.roster)) return;
+      const teamName = toDE(r?.team?.displayName || r?.team?.shortDisplayName || '');
+      const names = r.roster
+        .filter(p => p.starter === true || p.active === true)
+        .map(p => toDE(p?.athlete?.displayName || p?.athlete?.shortName || ''))
+        .filter(Boolean);
+      const starters = r.roster.filter(p => p.starter === true)
+        .map(p => toDE(p?.athlete?.displayName || ''))
+        .filter(Boolean);
+      blocks.push({ team: { displayName: teamName }, athletes: starters.length ? starters.map(n => ({ displayName: n })) : names.slice(0, 11).map(n => ({ displayName: n })) });
+    });
+  }
   const parsed = blocks.map(b => ({
     team: toDE(b?.team?.displayName || b?.team?.shortDisplayName || ''),
     names: parseLineupNames(b),
@@ -4172,7 +4188,7 @@ async function fetchLiveData() {
     lastFetch = new Date();
     if (dot) dot.classList.add('on');
     if (stEl) {
-      const tournamentStarted = new Date() >= new Date('2026-06-11T19:00:00-06:00');
+      const tournamentStarted = new Date() >= (getMatchDateTime(MATCHES[0]) || new Date('2026-06-11T21:00:00'));
       stEl.textContent = found > 0 ? `✓ ${found} Spiel${found===1?'':'e'} aktualisiert` : tournamentStarted ? 'Keine laufenden Spiele' : 'Turnier startet am 11. Juni 2026';
       stEl.style.color = 'var(--green)';
     }
