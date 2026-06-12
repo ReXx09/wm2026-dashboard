@@ -4076,8 +4076,9 @@ function parseMatchFeedFromSummary(data) {
     .map(normalizeFeedItem)
     .filter(Boolean)
     .map(s => s.replace(/\s+/g, ' ').trim());
-  const fullItems = normalized.slice(0, 36);
-  const items = Array.from(new Set(normalized)).slice(0, 12);
+  const ordered = orderFeedItemsNewestFirst(normalized);
+  const fullItems = ordered.slice(0, 36);
+  const items = Array.from(new Set(ordered)).slice(0, 12);
   return { items, fullItems };
 }
 
