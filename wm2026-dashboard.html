@@ -3733,7 +3733,7 @@ const TEAM_DE = {}; Object.entries(TEAM_EN).forEach(([d,e])=>TEAM_DE[e]=d);
 const ALIASES = {'Czech Republic':'Tschechien','Czechia':'Tschechien','Bosnia-Herzegovina':'Bosnien-Herzegowina','Bosnia and Herzegovina':'Bosnien-Herzegowina','Ivory Coast':'Elfenbeinküste','United States':'USA','South Korea':'Südkorea','Cape Verde':'Kap Verde','Saudi Arabia':'Saudi-Arabien','New Zealand':'Neuseeland','DR Congo':'DR Kongo','Congo DR':'DR Kongo','Uzbekistan':'Usbekistan','Colombia':'Kolumbien','Croatia':'Kroatien','Australia':'Australien','Morocco':'Marokko','Brazil':'Brasilien','France':'Frankreich','Germany':'Deutschland','Netherlands':'Niederlande','Spain':'Spanien','Belgium':'Belgien','Switzerland':'Schweiz','Norway':'Norwegen','Tunisia':'Tunesien','Algeria':'Algerien','Austria':'Österreich','Jordan':'Jordanien','Portugal':'Portugal','Ecuador':'Ecuador','Argentina':'Argentinien','Iran':'Iran','Egypt':'Ägypten','Sweden':'Schweden','Japan':'Japan','Turkey':'Türkei','Türkiye':'Türkei','Curacao':'Curaçao','Qatar':'Katar','Canada':'Kanada','Mexico':'Mexiko','Scotland':'Schottland','Ghana':'Ghana','Panama':'Panama','Senegal':'Senegal','Iraq':'Irak','Uruguay':'Uruguay'};
 
 let liveScores = {}; // matchNum → {h,a,status,clock,live,done}
-let liveLineups = {}; // matchNum → {status, home[], away[], checkedAt}
+let liveLineups = {}; // matchNum → {status, home[], away[], checkedAt, rostersByTeam?}
 let liveMatchFeed = {}; // matchNum → {status, items[], checkedAt}
 let liveCards = {}; // matchNum → {home,away,checkedAt}
 let highlightTickerItems = [];
@@ -4143,6 +4143,7 @@ function parseLineupsFromBoxscorePlayers(data, match) {
 
 function parseLineupsFromSummary(data, match) {
   const blocks = [];
+  const rostersByTeam = {};
   if (Array.isArray(data?.lineups)) blocks.push(...data.lineups);
   if (Array.isArray(data?.boxscore?.lineups)) blocks.push(...data.boxscore.lineups);
   // ESPN WM 2026: rosters statt lineups
@@ -4151,9 +4152,9 @@ function parseLineupsFromSummary(data, match) {
       if (!Array.isArray(r?.roster)) return;
       const teamName = toDE(r?.team?.displayName || r?.team?.shortDisplayName || '');
       const names = r.roster
-        .filter(p => p.starter === true || p.active === true)
         .map(p => toDE(p?.athlete?.displayName || p?.athlete?.shortName || ''))
         .filter(Boolean);
+      rostersByTeam[teamName] = Array.from(new Set(names));
       const starters = r.roster.filter(p => p.starter === true)
         .map(p => toDE(p?.athlete?.displayName || ''))
         .filter(Boolean);
@@ -4180,6 +4181,7 @@ function parseLineupsFromSummary(data, match) {
     home,
     away,
     checkedAt: Date.now(),
+    rostersByTeam,
   };
 }
 
@@ -5239,9 +5241,11 @@ function openSquadModal(teamName, evt) {
   document.getElementById('squad-title').textContent = teamFlag + ' ' + teamName;
 
   const squad = SQUADS[teamName];
+  const liveRoster = Object.values(liveLineups).find(lu => lu?.rostersByTeam?.[teamName])?.rostersByTeam?.[teamName];
   const body = document.getElementById('squad-body');
+  const rosterSource = liveRoster && liveRoster.length ? liveRoster : squad;
 
-  if (!squad || squad.length === 0) {
+  if (!rosterSource || rosterSource.length === 0) {
     body.innerHTML = '<div class="squad-no-data">Kein Kader hinterlegt.</div>';
   } else {
     const sections = [
@@ -5250,15 +5254,26 @@ function openSquadModal(teamName, evt) {
       { key: 'MID', label: 'Mittelfeld' },
       { key: 'FWD', label: 'Angriff' }
     ];
-    body.innerHTML = sections.map(s => {
-      const players = squad.filter(p => p.pos === s.key);
+    const sourceLabel = liveRoster && liveRoster.length ? 'Aktueller ESPN-Roster' : 'Lokaler Kader';
+    const sourceHtml = `<div class="squad-section-header">${sourceLabel}</div>`;
+    body.innerHTML = sourceHtml + sections.map(s => {
+      const players = rosterSource.filter(p => typeof p === 'string' ? true : p.pos === s.key);
       if (!players.length) return '';
       return `<div class="squad-section-header">${s.label}</div>` +
-        players.map(p => `<div class="squad-player">
-          <span class="squad-pos-badge ${p.pos}">${p.pos}</span>
-          <span class="squad-player-name">${p.name}</span>
-          <span class="squad-player-club">${p.club}</span>
-        </div>`).join('');
+        players.map(p => {
+          if (typeof p === 'string') {
+            return `<div class="squad-player">
+              <span class="squad-pos-badge">?</span>
+              <span class="squad-player-name">${escapeHtml(p)}</span>
+              <span class="squad-player-club">ESPN</span>
+            </div>`;
+          }
+          return `<div class="squad-player">
+            <span class="squad-pos-badge ${p.pos}">${p.pos}</span>
+            <span class="squad-player-name">${p.name}</span>
+            <span class="squad-player-club">${p.club}</span>
+          </div>`;
+        }).join('');
     }).join('');
   }
 
