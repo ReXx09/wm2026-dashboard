@@ -4252,8 +4252,12 @@ async function fetchLiveData() {
     const lineupTasks = [];
 
     let found = 0;
+    let apiErrorCount = 0;
     results.forEach(r => {
-      if (r.status !== 'fulfilled' || !r.value?.events) return;
+      if (r.status !== 'fulfilled' || !r.value?.events) {
+        apiErrorCount++;
+        return;
+      }
       r.value.events.forEach(ev => {
         const comp = ev.competitions?.[0];
         if (!comp) return;
