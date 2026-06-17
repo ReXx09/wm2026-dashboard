@@ -711,6 +711,7 @@ a.team-name-link:hover,a.team-name-link:focus{color:var(--gold);text-decoration:
       <span id="live-last-update" style="color:var(--text3);">–</span>
       <div style="margin-left:auto;display:flex;gap:.4rem;">
         <button class="lbtn" onclick="fetchLiveData()">🔄 Jetzt laden</button>
+        <button class="lbtn" onclick="clearCache()" title="Lokalen Cache löschen und Daten neu laden">🗑️ Cache reset</button>
         <button class="lbtn active-btn" id="ar-btn" onclick="toggleAutoRefresh()">⏸ Auto AN</button>
       </div>
     </div>
@@ -2581,15 +2582,36 @@ function updateCountdown() {
   const nextFav = uiSettings.countdownFollowsFavorite && favTeam ? findUpcomingMatchForTeam(favTeam) : null;
   const target = nextFav ? nextFav.dt.getTime() : tournamentStart;
   const diff = target - now;
+
+  const cdEl = document.getElementById('countdown');
+  if (!cdEl) return;
+
   if (diff <= 0) {
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
-    const liveLabel = uiSettings.countdownFollowsFavorite && favTeam ? `Spiel von ${favTeam} läuft!` : 'Das Turnier läuft!';
-    document.getElementById('countdown').innerHTML = `<div class="cd-label">${liveLabel}</div><div class="cd-live">🔴 LIVE</div>`;
+    // Turnier läuft ODER Favoriten-Spiel läuft — aber Timer NICHT stoppen!
+    // (könnte gleich zum nächsten Spiel wechseln müssen)
+    const isLiveFav = nextFav && nextFav.live;
+    const liveLabel = (uiSettings.countdownFollowsFavorite && favTeam)
+      ? (isLiveFav ? `Spiel von ${favTeam} läuft!` : `Das Turnier läuft!`)
+      : 'Das Turnier läuft!';
+    cdEl.innerHTML = `<div class="cd-label">${liveLabel}</div><div class="cd-live">🔴 LIVE</div>`;
     return;
   }
+
+  // Sicherstellen dass die Zahlen-Spans existieren (nach LIVE-Zustand wiederherstellen)
+  if (!document.getElementById('cd-d')) {
+    cdEl.innerHTML = `
+      <div class="cd-label"></div>
+      <div class="cd-units" id="cd-units">
+        <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">Tage</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">Std</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">Min</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">Sek</span></div>
+      </div>`;
+  }
+
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -2599,10 +2621,13 @@ function updateCountdown() {
   document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
   document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
   const cdLabel = document.querySelector('#countdown .cd-label');
-  if (cdLabel) cdLabel.textContent = uiSettings.countdownFollowsFavorite && favTeam ? `Nächstes Spiel von ${favTeam}` : 'Turnierstart in';
+  if (cdLabel) cdLabel.textContent = (uiSettings.countdownFollowsFavorite && favTeam)
+    ? `Nächstes Spiel von ${favTeam}`
+    : 'Turnierstart in';
 }
 updateCountdown();
-countdownTimer = setInterval(updateCountdown, 1000);
+// Timer EINMALIG starten und nie mehr stoppen
+if (!countdownTimer) countdownTimer = setInterval(updateCountdown, 1000);
 
 // =====================================================================
 // TABS
@@ -3781,7 +3806,8 @@ function normalizeCachedScores() {
   Object.keys(liveScores || {}).forEach(matchNum => {
     const sc = liveScores[matchNum];
     if (!sc || typeof sc !== 'object') return;
-    liveScores[matchNum] = normalizeLiveScoreRecord(sc.h, sc.a, sc.status, sc.clock, sc.completed !== undefined ? sc.completed : sc.done, sc.live);
+    // sc.done/sc.completed NICHT weitergeben – nur status entscheidet ob ein Spiel fertig ist
+    liveScores[matchNum] = normalizeLiveScoreRecord(sc.h, sc.a, sc.status, sc.clock, false, sc.live);
   });
 }
 
@@ -3843,7 +3869,28 @@ function findMatchByTeams(hEN, aEN) {
   return MATCHES.find(m => (m.home===hDE && m.away===aDE) || (m.home===hEN && m.away===aEN));
 }
 
+const CACHE_KEYS = ['wm2026_scores','wm2026_lineups','wm2026_match_feed','wm2026_cards','wm2026_scorers','wm2026_yellow_cards','wm2026_assists'];
+const CACHE_VERSION = '3';
+
+function clearCache(silent) {
+  CACHE_KEYS.forEach(k => localStorage.removeItem(k));
+  localStorage.setItem('wm2026_cache_version', CACHE_VERSION);
+  liveScores = {}; liveLineups = {}; liveMatchFeed = {};
+  liveCards = {}; liveScorersData = {}; liveYellowCardsData = {}; liveAssistsData = {};
+  if (!silent) {
+    const stEl = document.getElementById('live-status-text');
+    if (stEl) { stEl.textContent = '🗑️ Cache geleert – lade neu…'; stEl.style.color = 'var(--gold)'; }
+    renderMatches();
+    fetchLiveData();
+  }
+}
+
 function loadCache() {
+  // Veralteten/fehlerhaften Cache automatisch wegwerfen
+  if (localStorage.getItem('wm2026_cache_version') !== CACHE_VERSION) {
+    CACHE_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('wm2026_cache_version', CACHE_VERSION);
+  }
   try {
     const c = localStorage.getItem('wm2026_scores');
     liveScores = c ? JSON.parse(c) || {} : {};
