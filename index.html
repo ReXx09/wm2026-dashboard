@@ -2581,15 +2581,36 @@ function updateCountdown() {
   const nextFav = uiSettings.countdownFollowsFavorite && favTeam ? findUpcomingMatchForTeam(favTeam) : null;
   const target = nextFav ? nextFav.dt.getTime() : tournamentStart;
   const diff = target - now;
+
+  const cdEl = document.getElementById('countdown');
+  if (!cdEl) return;
+
   if (diff <= 0) {
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
-    const liveLabel = uiSettings.countdownFollowsFavorite && favTeam ? `Spiel von ${favTeam} läuft!` : 'Das Turnier läuft!';
-    document.getElementById('countdown').innerHTML = `<div class="cd-label">${liveLabel}</div><div class="cd-live">🔴 LIVE</div>`;
+    // Turnier läuft ODER Favoriten-Spiel läuft — aber Timer NICHT stoppen!
+    // (könnte gleich zum nächsten Spiel wechseln müssen)
+    const isLiveFav = nextFav && nextFav.live;
+    const liveLabel = (uiSettings.countdownFollowsFavorite && favTeam)
+      ? (isLiveFav ? `Spiel von ${favTeam} läuft!` : `Das Turnier läuft!`)
+      : 'Das Turnier läuft!';
+    cdEl.innerHTML = `<div class="cd-label">${liveLabel}</div><div class="cd-live">🔴 LIVE</div>`;
     return;
   }
+
+  // Sicherstellen dass die Zahlen-Spans existieren (nach LIVE-Zustand wiederherstellen)
+  if (!document.getElementById('cd-d')) {
+    cdEl.innerHTML = `
+      <div class="cd-label"></div>
+      <div class="cd-units" id="cd-units">
+        <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">Tage</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">Std</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">Min</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">Sek</span></div>
+      </div>`;
+  }
+
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -2599,10 +2620,13 @@ function updateCountdown() {
   document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
   document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
   const cdLabel = document.querySelector('#countdown .cd-label');
-  if (cdLabel) cdLabel.textContent = uiSettings.countdownFollowsFavorite && favTeam ? `Nächstes Spiel von ${favTeam}` : 'Turnierstart in';
+  if (cdLabel) cdLabel.textContent = (uiSettings.countdownFollowsFavorite && favTeam)
+    ? `Nächstes Spiel von ${favTeam}`
+    : 'Turnierstart in';
 }
 updateCountdown();
-countdownTimer = setInterval(updateCountdown, 1000);
+// Timer EINMALIG starten und nie mehr stoppen
+if (!countdownTimer) countdownTimer = setInterval(updateCountdown, 1000);
 
 // =====================================================================
 // TABS
@@ -3762,7 +3786,7 @@ function normalizeLiveScoreRecord(homeScore, awayScore, status, clock, completed
   const h = Number.isFinite(hNum) ? hNum : null;
   const a = Number.isFinite(aNum) ? aNum : null;
   const live = liveOverride === true || isLiveStatus(status);
-  const done = isFinalStatus(status) || completed === true || (h !== null && a !== null && !live);
+  const done = isFinalStatus(status) || completed === true;
   return { h, a, status: String(status || ''), clock, live, done };
 }
 

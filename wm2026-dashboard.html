@@ -3762,7 +3762,7 @@ function normalizeLiveScoreRecord(homeScore, awayScore, status, clock, completed
   const h = Number.isFinite(hNum) ? hNum : null;
   const a = Number.isFinite(aNum) ? aNum : null;
   const live = liveOverride === true || isLiveStatus(status);
-  const done = isFinalStatus(status) || completed === true || (h !== null && a !== null && !live);
+  const done = isFinalStatus(status) || completed === true;
   return { h, a, status: String(status || ''), clock, live, done };
 }
 
