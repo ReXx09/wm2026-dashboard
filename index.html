@@ -5367,7 +5367,7 @@ function closeGroupModal(e){
     }
   }
 }
-
+// Squad-Modal
 function closeSquadModal(e) {
   const overlay = document.getElementById('squad-overlay');
   if (!overlay) return;
@@ -5383,7 +5383,7 @@ function openSquadModal(teamName, evt) {
   if (evt) { evt.preventDefault(); evt.stopPropagation(); }
   lastFocusBeforeModal = document.activeElement;
 
-  // Gruppe & Farbe des Teams ermitteln
+  // Team-Farbe und Flagge aus den Gruppen-Daten holen
   let teamColor = '#f0b429';
   let teamFlag = '';
   for (const [, g] of Object.entries(GROUPS)) {
@@ -5391,51 +5391,56 @@ function openSquadModal(teamName, evt) {
     if (t) { teamColor = g.color; teamFlag = t.flag || ''; break; }
   }
 
+  // Modal-Header setzen
   const head = document.getElementById('squad-head');
   head.style.background = teamColor;
   document.getElementById('squad-title').textContent = teamFlag + ' ' + teamName;
 
+  // ---- NUR LOKALEN KADER verwenden ----
   const squad = SQUADS[teamName];
-  const liveRoster = Object.values(liveLineups).find(lu => lu?.rostersByTeam?.[teamName])?.rostersByTeam?.[teamName];
   const body = document.getElementById('squad-body');
-  const rosterSource = liveRoster && liveRoster.length ? liveRoster : squad;
 
-  if (!rosterSource || rosterSource.length === 0) {
+  if (!squad || squad.length === 0) {
     body.innerHTML = '<div class="squad-no-data">Kein Kader hinterlegt.</div>';
-  } else {
-    const sections = [
-      { key: 'GK', label: 'Torhüter' },
-      { key: 'DEF', label: 'Abwehr' },
-      { key: 'MID', label: 'Mittelfeld' },
-      { key: 'FWD', label: 'Angriff' }
-    ];
-    const sourceLabel = liveRoster && liveRoster.length ? 'Aktueller ESPN-Roster' : 'Lokaler Kader';
-    const sourceHtml = `<div class="squad-section-header">${sourceLabel}</div>`;
-    body.innerHTML = sourceHtml + sections.map(s => {
-      const players = rosterSource.filter(p => typeof p === 'string' ? true : p.pos === s.key);
-      if (!players.length) return '';
-      return `<div class="squad-section-header">${s.label}</div>` +
-        players.map(p => {
-          if (typeof p === 'string') {
-            return `<div class="squad-player">
-              <span class="squad-pos-badge">?</span>
-              <span class="squad-player-name">${escapeHtml(p)}</span>
-              <span class="squad-player-club">ESPN</span>
-            </div>`;
-          }
-          return `<div class="squad-player">
-            <span class="squad-pos-badge ${p.pos}">${p.pos}</span>
-            <span class="squad-player-name">${p.name}</span>
-            <span class="squad-player-club">${p.club}</span>
-          </div>`;
-        }).join('');
-    }).join('');
+    document.getElementById('squad-overlay').style.display = 'flex';
+    const closeBtn = document.getElementById('squad-close-btn');
+    if (closeBtn) closeBtn.focus();
+    const titleEl = document.getElementById('squad-title');
+    if (titleEl) titleEl.dataset.team = teamName;
+    renderSquadFavBtn(teamName);
+    return;
   }
 
+  // Sektionen für Positionen
+  const sections = [
+    { key: 'GK', label: 'Torhüter' },
+    { key: 'DEF', label: 'Abwehr' },
+    { key: 'MID', label: 'Mittelfeld' },
+    { key: 'FWD', label: 'Angriff' }
+  ];
+
+  let html = '<div class="squad-section-header">Offizieller WM-Kader 2026</div>';
+
+  // Lokalen Kader nach Position gruppieren und ausgeben
+  sections.forEach(sec => {
+    const players = squad.filter(p => p.pos === sec.key);
+    if (!players.length) return;
+    html += `<div class="squad-section-header">${sec.label}</div>`;
+    players.forEach(p => {
+      html += `<div class="squad-player">
+        <span class="squad-pos-badge ${p.pos}">${p.pos}</span>
+        <span class="squad-player-name">${escapeHtml(p.name)}</span>
+        <span class="squad-player-club">${p.club || ''}</span>
+      </div>`;
+    });
+  });
+
+  body.innerHTML = html;
+
+  // Modal anzeigen
   document.getElementById('squad-overlay').style.display = 'flex';
   const closeBtn = document.getElementById('squad-close-btn');
   if (closeBtn) closeBtn.focus();
-  // Favoriten-Button aktualisieren
   const titleEl = document.getElementById('squad-title');
   if (titleEl) titleEl.dataset.team = teamName;
   renderSquadFavBtn(teamName);
